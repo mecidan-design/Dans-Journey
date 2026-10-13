@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dan's trip to Iceland</title>
+<style>
+/* =========================================================
+   DAN'S TRIP TO ICELAND - flipbook de viaje.
+   Estetica: vikingo + manualidad de Art Attack 1999
+   (carton, cinta de papel, papel rasgado, pintura) sobre
+   la base de dibujito de los 90 de 5th form.
+   Sin fuentes externas y SIN SONIDO (los videos van sin pista de audio).
+   ========================================================= */
+:root{
+  --negro:#141414;
+  --crema:#FFF8E7; --papel:#FFFDF5;
+  --carton:#C89558; --carton-osc:#A8743A;
+  --rosa:#FF3D7F; --turquesa:#00C2CB; --amarillo:#FFD23F;
+  --naranja:#FF7A1A; --lima:#8FE04A; --violeta:#7B3FF2;
+  --rojo:#EF2B2D; --azul:#2D7DD2; --mar:#1B4F8C; --verde:#16C060;
+  --gris:#6B6B6B;
+  --titulo:"Arial Black","Arial Bold",Impact,"Franklin Gothic Heavy","Trebuchet MS",Arial,sans-serif;
+  --cuerpo:"Trebuchet MS",Verdana,"Segoe UI",Arial,sans-serif;
+  --mano:"Comic Sans MS","Chalkboard SE","Comic Neue","Trebuchet MS",cursive;
+  --linea:4px solid var(--negro);
+  --sombra:6px 6px 0 var(--negro);
+  --sombra-chica:4px 4px 0 var(--negro);
+  --c:var(--rojo); /* color de la parada actual */
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--cuerpo); color:var(--negro); min-height:100vh;
+  padding:18px 16px 0; line-height:1.5;
+  /* carton corrugado de manualidad */
+  background:
+    radial-gradient(circle, rgba(0,0,0,.10) 1.4px, transparent 1.5px) 0 0/20px 20px,
+    repeating-linear-gradient(90deg, rgba(255,255,255,.07) 0 6px, rgba(0,0,0,.06) 6px 12px),
+    var(--carton);
+}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:1180px;margin:0 auto}
+h1,h2,h3,.btn,.chip,.tile,.gap,.label,.tag{font-family:var(--titulo)}
+h2,h3{margin:0;line-height:1.05}
+.sticker{
+  color:var(--crema); -webkit-text-stroke:3px var(--negro); paint-order:stroke fill;
+  text-shadow:5px 5px 0 var(--negro);
+}
+
+/* ---------- cabecera: mancha de pintura roja ---------- */
+.hero{position:relative; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  justify-content:space-between; margin-bottom:16px}
+.logo{position:relative; padding:18px 30px 22px; transform:rotate(-2deg)}
+.logo svg.splat{position:absolute; inset:-6px -14px; width:calc(100% + 28px); height:calc(100% + 12px); z-index:0}
+.logo h1{position:relative; z-index:1; margin:0; font-size:clamp(1.6rem,5.4vw,2.9rem); line-height:1; text-transform:uppercase}
+.logo .sub{position:relative; z-index:1; display:inline-block; margin-top:6px; background:var(--amarillo);
+  border:3px solid var(--negro); border-radius:8px; padding:2px 10px; font-family:var(--titulo);
+  font-size:.8rem; letter-spacing:1.5px; text-transform:uppercase; transform:rotate(2deg)}
+/* escudos vikingos = sellos de progreso */
+.shields{max-width:470px; display:flex; flex-wrap:wrap; gap:6px; background:var(--crema); border:var(--linea);
+  border-radius:16px; padding:8px 10px; box-shadow:var(--sombra-chica); transform:rotate(1deg)}
+.shields .lbl{width:100%; font-family:var(--titulo); font-size:.72rem; letter-spacing:1px; text-transform:uppercase}
+.shield{width:34px; height:34px; border-radius:50%; border:3px solid var(--negro); padding:0;
+  background:#E9DCC0; position:relative; font-family:var(--titulo); font-size:.8rem}
+.shield.done{background:conic-gradient(var(--rojo) 0 90deg, var(--crema) 90deg 180deg, var(--rojo) 180deg 270deg, var(--crema) 270deg)}
+.shield.done:after{content:""; position:absolute; inset:9px; border-radius:50%; background:var(--amarillo); border:2px solid var(--negro)}
+.shield span{position:relative; z-index:1}
+.shield.done span{display:none}
+
+/* ---------- el libro ---------- */
+.book{perspective:2400px; margin-bottom:14px}
+.spread{display:grid; grid-template-columns:1fr 1fr; position:relative;
+  border:6px solid var(--negro); border-radius:20px; box-shadow:12px 12px 0 var(--negro);
+  background:var(--negro); gap:6px; transform-style:preserve-3d}
+/* lomo del libro */
+.spread:before{content:""; position:absolute; left:50%; top:0; bottom:0; width:6px; margin-left:-3px;
+  background:repeating-linear-gradient(180deg, var(--amarillo) 0 10px, var(--negro) 10px 20px); z-index:3}
+.page{position:relative; min-height:560px; padding:26px 26px 30px; overflow:hidden; backface-visibility:hidden}
+.page.left{border-radius:14px 0 0 14px; transform-origin:right center;
+  /* cartulina de color con puntos de trama */
+  background:radial-gradient(circle, rgba(0,0,0,.12) 1.4px, transparent 1.5px) 0 0/18px 18px, var(--c)}
+.page.right{border-radius:0 14px 14px 0; transform-origin:left center;
+  /* hoja rayada de cuaderno */
+  background:linear-gradient(90deg, transparent 38px, rgba(239,43,45,.35) 38px 40px, transparent 40px),
+    repeating-linear-gradient(180deg, var(--papel) 0 31px, #CFE3F5 31px 33px)}
+.pnum{position:absolute; bottom:8px; font-family:var(--mano); font-size:.85rem; color:var(--gris)}
+.left .pnum{left:16px; color:rgba(0,0,0,.6)} .right .pnum{right:16px}
+
+/* animacion de pagina */
+.out-next .page.right{animation:foldR .28s ease-in forwards}
+.in-next .page.left{animation:unfoldL .32s ease-out}
+.out-prev .page.left{animation:foldL .28s ease-in forwards}
+.in-prev .page.right{animation:unfoldR .32s ease-out}
+@keyframes foldR{to{transform:rotateY(-90deg)}}
+@keyframes unfoldL{from{transform:rotateY(90deg)}}
+@keyframes foldL{to{transform:rotateY(90deg)}}
+@keyframes unfoldR{from{transform:rotateY(-90deg)}}
+
+/* ---------- piezas de manualidad ---------- */
+.tape{position:absolute; width:110px; height:30px; background:rgba(244,232,180,.88);
+  box-shadow:0 1px 2px rgba(0,0,0,.25); z-index:4;
+  clip-path:polygon(0 8%,6% 0,12% 10%,18% 0,82% 0,88% 10%,94% 0,100% 8%,100% 92%,94% 100%,88% 90%,82% 100%,18% 100%,12% 90%,6% 100%,0 92%)}
+.torn{background:var(--papel); border:var(--linea); box-shadow:var(--sombra-chica); position:relative}
+.label{display:inline-block; background:var(--amarillo); border:var(--linea); border-radius:10px;
+  padding:4px 14px; box-shadow:var(--sombra-chica); text-transform:uppercase; letter-spacing:1px; font-size:.85rem}
+.stopname{font-size:clamp(1.5rem,3.4vw,2.3rem); text-transform:uppercase; margin:10px 0 14px}
+.hand{font-family:var(--mano)}
+
+/* marco de foto principal (polaroid pegada con cinta) */
+.polaroid{background:#fff; border:var(--linea); box-shadow:var(--sombra); padding:10px 10px 6px;
+  position:relative; transform:rotate(-1.5deg); margin:6px auto 0; max-width:440px}
+.polaroid .tape.t1{top:-14px; left:-24px; transform:rotate(-30deg)}
+.polaroid .tape.t2{top:-14px; right:-24px; transform:rotate(28deg)}
+.polaroid .media{width:100%; height:min(52vh,430px); background:#222; display:flex; align-items:center; justify-content:center; overflow:hidden; border:2px solid var(--negro)}
+.polaroid img,.polaroid video{width:100%; height:100%; object-fit:contain; display:block; background:#222}
+.polaroid .cap{font-family:var(--mano); font-size:1.08rem; text-align:center; padding:8px 4px 2px; min-height:2.6em}
+.place{display:inline-block; font-family:var(--titulo); font-size:.7rem; letter-spacing:1px; text-transform:uppercase;
+  background:var(--negro); color:var(--crema); border-radius:6px; padding:2px 8px; margin-right:6px; vertical-align:2px}
+.thumbs{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:18px}
+.thumb{width:68px; height:68px; padding:0; border:3px solid var(--negro); border-radius:8px; overflow:hidden;
+  background:#222; position:relative; box-shadow:3px 3px 0 var(--negro); transform:rotate(var(--r,0deg))}
+.thumb img{width:100%; height:100%; object-fit:cover; display:block}
+.thumb.on{outline:4px solid var(--amarillo); outline-offset:2px}
+.thumb .play{position:absolute; inset:0; display:flex; align-items:center; justify-content:center}
+.thumb .play:after{content:""; border-left:18px solid #fff; border-top:11px solid transparent; border-bottom:11px solid transparent;
+  filter:drop-shadow(2px 2px 0 var(--negro)); margin-left:4px}
+.vidtag{position:absolute; top:8px; left:8px; z-index:2; background:var(--rojo); color:#fff; border:3px solid var(--negro);
+  border-radius:8px; font-family:var(--titulo); font-size:.72rem; padding:1px 8px; letter-spacing:1px}
+
+/* ---------- pagina derecha: tareas ---------- */
+.story{background:var(--crema); border:var(--linea); border-radius:18px; padding:14px 16px 14px 18px;
+  box-shadow:var(--sombra-chica); position:relative; font-size:1.06rem; margin:2px 0 18px}
+.story b.who{font-family:var(--titulo); text-transform:uppercase; font-size:.8rem; letter-spacing:1px; display:block; color:var(--c)}
+.story:after{content:""; position:absolute; left:-20px; top:22px; border:12px solid transparent; border-right:16px solid var(--negro)}
+.task{margin:0 0 18px}
+.task h3{font-size:1rem; text-transform:uppercase; display:flex; align-items:center; gap:8px; margin-bottom:8px}
+.task h3 .n{display:inline-flex; width:30px; height:30px; border-radius:50%; background:var(--c); color:#fff;
+  border:3px solid var(--negro); align-items:center; justify-content:center; font-size:.9rem; flex:none}
+.task h3 .ok{margin-left:auto; font-size:.75rem; background:var(--lima); border:3px solid var(--negro); border-radius:8px; padding:1px 8px; transform:rotate(3deg)}
+.wordbox{border:4px solid var(--rojo); background:#fff; border-radius:6px; padding:8px 10px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:10px}
+.chip{background:var(--amarillo); border:3px solid var(--negro); border-radius:10px; padding:5px 12px; font-size:.95rem;
+  box-shadow:3px 3px 0 var(--negro); transition:transform .1s}
+.chip:hover{transform:translate(-1px,-1px) rotate(-2deg)}
+.chip.used{opacity:.35; box-shadow:none; transform:none; cursor:default}
+.chip.pick{background:var(--turquesa); color:#fff}
+.sent{font-size:1.06rem; margin:8px 0; line-height:2.2}
+.sent .let{font-family:var(--titulo); margin-right:6px}
+.gap{min-width:96px; display:inline-block; border:none; border-bottom:4px dashed var(--negro); background:transparent;
+  padding:0 8px; font-size:1rem; line-height:1.4; vertical-align:baseline}
+.gap.sel{background:rgba(255,210,63,.55); border-radius:6px 6px 0 0}
+.gap.full{border-bottom-style:solid; color:var(--mar)}
+.gap.good{background:var(--lima); border-radius:6px; border-bottom-color:transparent; color:var(--negro)}
+.gap.bad{background:#FFB3B3; border-radius:6px; animation:shake .35s}
+.tray,.answer{display:flex; flex-wrap:wrap; gap:8px; min-height:52px; padding:8px; border-radius:12px}
+.tray{background:rgba(0,194,203,.12); border:3px dashed var(--turquesa)}
+.answer{background:#fff; border:3px solid var(--negro); margin-top:8px}
+.answer.good{background:#E4FBD2}
+.answer.bad{animation:shake .35s; background:#FFE1E1}
+.answer:empty:before{content:"Tap the words in order…"; font-family:var(--mano); color:var(--gris); padding:6px}
+.tile{background:#fff; border:3px solid var(--negro); border-radius:8px; padding:4px 10px; box-shadow:3px 3px 0 var(--negro); font-size:.95rem}
+.answer .tile{background:var(--amarillo)}
+.row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px}
+.btn{background:var(--c); color:#fff; border:var(--linea); border-radius:12px; padding:7px 16px; box-shadow:var(--sombra-chica);
+  text-transform:uppercase; letter-spacing:1px; font-size:.85rem}
+.btn:hover{transform:translate(-1px,-1px)}
+.btn:active{transform:translate(3px,3px); box-shadow:1px 1px 0 var(--negro)}
+.btn.ghost{background:#fff; color:var(--negro)}
+.fb{font-family:var(--mano); font-size:1rem; min-height:1.4em}
+.fb.yes{color:#0B7A2E} .fb.no{color:#B3121B}
+textarea{width:100%; min-height:80px; font-family:var(--mano); font-size:1.1rem; border:var(--linea); border-radius:12px;
+  padding:10px; background:#fff; resize:vertical}
+.starters{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px}
+.starter{background:#fff; border:2px solid var(--negro); border-radius:999px; padding:3px 10px; font-family:var(--mano); font-size:.92rem}
+.starter.w{background:#FFF1B8}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* ---------- portada ---------- */
+.cover-left{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+  background:repeating-linear-gradient(180deg, #1B4F8C 0 26px, #1A5FA3 26px 52px) !important}
+.cover-left h2{font-size:clamp(2rem,5vw,3.4rem); text-transform:uppercase}
+.cover-left .by{margin-top:10px}
+.ship{width:100%; max-width:420px; margin-top:8px}
+.bigbtn{font-size:1.1rem; padding:12px 24px; margin-top:14px; background:var(--rojo)}
+.goal{background:#3BA6D9; color:#fff; border:var(--linea); border-radius:14px; overflow:hidden; box-shadow:var(--sombra-chica); margin:16px 0}
+.goal .t{background:#1C7FB0; padding:6px 14px; font-family:var(--titulo); text-transform:uppercase; font-size:.9rem; letter-spacing:1px}
+.goal ul{margin:0; padding:8px 14px 10px 34px}
+.howto{list-style:none; padding:0; margin:0}
+.howto li{display:flex; gap:10px; align-items:flex-start; margin:8px 0}
+.howto .dot{flex:none; width:30px; height:30px; border-radius:50%; border:3px solid var(--negro); display:flex; align-items:center; justify-content:center; font-family:var(--titulo); font-size:.85rem; color:#fff}
+
+/* ---------- mapa ---------- */
+.map{width:100%; max-width:520px; display:block; margin:0 auto}
+.map .pin{cursor:pointer}
+.map .pin:hover circle{fill:var(--amarillo)}
+.stoplist{list-style:none; margin:0; padding:0; columns:2; column-gap:14px}
+.stoplist li{break-inside:avoid; margin:0 0 8px}
+.stoplist button{width:100%; text-align:left; display:flex; gap:8px; align-items:center; background:#fff; border:3px solid var(--negro);
+  border-radius:10px; padding:5px 8px; box-shadow:3px 3px 0 var(--negro); font-family:var(--titulo); font-size:.82rem; text-transform:uppercase}
+.stoplist .num{flex:none; width:26px; height:26px; border-radius:50%; border:2px solid var(--negro); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.75rem}
+.stoplist .tick{margin-left:auto; color:#0B7A2E}
+
+/* ---------- match y adivinanzas ---------- */
+.grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px}
+.ph{position:relative; border:var(--linea); background:#fff; padding:6px; box-shadow:var(--sombra-chica); transform:rotate(var(--r,0deg))}
+.ph img{width:100%; aspect-ratio:4/3; object-fit:cover; display:block; border:2px solid var(--negro)}
+.ph .let{position:absolute; top:-12px; left:-12px; width:34px; height:34px; border-radius:50%; background:var(--rojo); color:#fff;
+  border:3px solid var(--negro); font-family:var(--titulo); display:flex; align-items:center; justify-content:center}
+.ph .stick{position:absolute; left:50%; bottom:12px; transform:translateX(-50%) rotate(-3deg); background:var(--lima); border:3px solid var(--negro);
+  border-radius:8px; padding:1px 10px; font-family:var(--titulo); font-size:.85rem; white-space:nowrap}
+button.ph{cursor:pointer; width:100%}
+.ph.bad{animation:shake .35s; outline:5px solid var(--rojo)}
+.ph.good{outline:5px solid var(--lima)}
+.ph.target{outline:5px dashed var(--amarillo); outline-offset:3px}
+.riddle{background:#fff; border:var(--linea); border-radius:14px; padding:12px; box-shadow:var(--sombra-chica); margin-bottom:12px}
+.riddle p{margin:0 0 8px; font-size:1.05rem}
+.ropts{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+.ropts .ph{padding:4px}
+.ropts .ph .let{width:26px; height:26px; font-size:.75rem; top:-9px; left:-9px}
+
+/* ---------- diario ---------- */
+.jentry{display:flex; gap:12px; align-items:flex-start; background:#fff; border:3px solid var(--negro); border-radius:12px;
+  padding:8px; box-shadow:3px 3px 0 var(--negro); margin-bottom:10px}
+.jentry img{width:64px; height:64px; object-fit:cover; border:2px solid var(--negro); border-radius:6px; flex:none}
+.jentry .s{font-family:var(--mano); font-size:1.08rem}
+.jentry .k{font-family:var(--titulo); font-size:.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--gris)}
+.score{display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px}
+.score div{background:var(--amarillo); border:var(--linea); border-radius:12px; padding:6px 12px; font-family:var(--titulo); box-shadow:var(--sombra-chica)}
+
+/* ---------- navegacion ---------- */
+.nav{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:8px 0 18px}
+.nav .btn{font-size:1rem; padding:10px 18px}
+.nav .btn[disabled]{opacity:.4; cursor:default}
+.nav .where{font-family:var(--titulo); background:var(--crema); border:var(--linea); border-radius:12px; padding:6px 14px; box-shadow:var(--sombra-chica); text-align:center}
+
+footer{text-align:center; padding:14px 10px 22px; font-family:var(--titulo); font-size:.85rem; letter-spacing:.5px}
+footer span{background:var(--crema); border:3px solid var(--negro); border-radius:10px; padding:4px 12px; display:inline-block}
+
+/* ---------- celular: una pagina debajo de la otra ---------- */
+@media (max-width:860px){
+  .spread{grid-template-columns:1fr}
+  .spread:before{display:none}
+  .page{min-height:0; padding:22px 16px 30px}
+  .page.left{border-radius:14px 14px 0 0} .page.right{border-radius:0 0 14px 14px}
+  .out-next .page.right,.in-next .page.left,.out-prev .page.left,.in-prev .page.right{animation:none}
+  .out-next .spread,.out-prev .spread{animation:none}
+  .book.out-next .spread{animation:foldR .25s ease-in forwards; transform-origin:left center}
+  .book.out-prev .spread{animation:foldL .25s ease-in forwards; transform-origin:right center}
+  .book.in-next .spread{animation:unfoldL .28s ease-out; transform-origin:right center}
+  .book.in-prev .spread{animation:unfoldR .28s ease-out; transform-origin:left center}
+  .polaroid .media{height:min(56vh,380px)}
+  .stoplist{columns:1}
+  .story:after{display:none}
+}
+@media (max-width:420px){ .ropts{grid-template-columns:repeat(3,1fr); gap:6px} .grid{gap:10px} .thumb{width:58px;height:58px} }
+@media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important} }
+@media print{
+  body{background:#fff; padding:0}
+  .hero,.nav,.page.left,.no-print{display:none !important}
+  .spread{display:block; border:none; box-shadow:none; background:#fff}
+  .page.right{background:#fff; min-height:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="logo">
+      <svg class="splat" viewBox="0 0 400 140" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M30 22 C70 2 120 18 160 8 C210 -4 260 14 300 6 C350 -2 392 20 388 52 C398 70 380 84 392 104 C398 130 350 136 310 128 C260 140 210 124 160 134 C110 142 60 126 26 130 C-2 132 4 100 12 82 C0 62 -2 40 30 22 Z
+                 M384 16 a10 10 0 1 1 0.1 0 Z M8 120 a7 7 0 1 1 0.1 0 Z" fill="#EF2B2D" stroke="#141414" stroke-width="5"/>
+      </svg>
+      <h1 class="sticker">Dan's trip to Iceland</h1>
+      <span class="sub">A Viking photo-journey</span>
+    </div>
+    <div class="shields" id="shields" aria-label="Viking shields: one for every stop you finish"></div>
+  </header>
+
+  <main class="book" id="book">
+    <div class="spread" id="spread">
+      <section class="page left" id="pL"></section>
+      <section class="page right" id="pR"></section>
+    </div>
+  </main>
+
+  <nav class="nav">
+    <button class="btn" id="prev" style="--c:var(--mar)">&#9664; Back</button>
+    <div class="where" id="where"></div>
+    <button class="btn" id="next" style="--c:var(--rojo)">Next &#9654;</button>
+  </nav>
+</div>
+
+<footer><span>Copyright Prof Dan M. Mecikovsky</span></footer>
+
+<script>
+/* =========================================================
+   ASSETS: rutas de las fotos y videos (carpeta media/).
+   Los videos estan recodificados SIN audio.
+   ========================================================= */
+var M = 'media/';
+
+/* =========================================================
+   DATA: las paradas del viaje. Todo el texto visible en ingles.
+   gaps: oraciones con ___ y sus respuestas en orden.
+   extras: palabras distractoras del word box.
+   ========================================================= */
+var STOPS = [
+  { id:'volcano', name:'Volcanic land', color:'#E0592A', pin:[138,272],
+    media:[
+      {img:'p7832.jpg', place:'Heimaey', cap:'On top of a sleeping volcano!'},
+      {img:'p1390.jpg', place:'Eldfell', cap:'The volcano is red and brown.'},
+      {img:'p1405.jpg', place:'Eldfell', cap:'Red rocks, and the sea far away.'},
+      {img:'p1402.jpg', place:'Eldfell', cap:'Old lava rocks. Look at the colours!'},
+      {img:'p0147.jpg', place:'Lava field', cap:'A big field of black lava.'},
+      {img:'volcano-rift.jpg', place:'Thingvellir', cap:'Balancing on old lava rocks.'}
+    ],
+    story:'Iceland is a land of volcanoes! The ground is black, red and brown because it is made of old lava. We climbed an inactive volcano. Inactive means it is sleeping, so there was no fire. Phew!',
+    gaps:[ {s:'We ___ an inactive volcano.', a:['climbed']},
+           {s:'The black rocks are old ___.', a:['lava']} ],
+    extras:['swam','snow'],
+    build:'The volcano is red and brown.',
+    starters:['I can see','The rocks are','Dan is standing on'],
+    words:['volcano','rocks','red','black','sea','town','sky']
+  },
+  { id:'waterfalls', name:'Waterfalls', color:'#2D7DD2', pin:[157,246],
+    media:[
+      {img:'p0587.jpg', place:'Seljalandsfoss', cap:'Mmm... I tried to eat the waterfall!'},
+      {img:'p0517.jpg', place:'Seljalandsfoss', cap:'I walked behind a waterfall!'},
+      {img:'p0418.jpg', place:'Gullfoss', cap:'A huge, wide waterfall. Viking pose!'},
+      {img:'p6465.jpg', place:'Thingvellir', cap:'A waterfall between big rocks.'},
+      {vid:'v0777.mp4', poster:'v0777.jpg', place:'Fjadrargljufur', cap:'A waterfall in a deep green canyon.'}
+    ],
+    story:'Iceland has hundreds of waterfalls. Some are tall, some are wide and some are very, very loud! I walked behind one waterfall and I got wet. Then I opened my mouth and tried to eat a waterfall. The water was really cold!',
+    gaps:[ {s:'I walked ___ a waterfall.', a:['behind']},
+           {s:'I tried to ___ the waterfall!', a:['eat']} ],
+    extras:['tall','loud'],
+    build:'I tried to eat the waterfall.',
+    starters:['I can see','The waterfall is','Dan is'],
+    words:['waterfall','tall','wide','water','wet','rocks','canyon']
+  },
+  { id:'rainbows', name:'Double rainbows', color:'#7B3FF2', pin:[173,254],
+    media:[
+      {img:'p6938.jpg', place:'Skogafoss', cap:'My mum and me. Can you see TWO rainbows?'},
+      {img:'p6994.jpg', place:'Skogafoss', cap:'Standing under the rainbow.'},
+      {img:'p0603.jpg', place:'Skogafoss', cap:'We met a monk at the waterfall!'}
+    ],
+    story:'At Skógafoss the sun was shining and the waterfall made lots of tiny drops of water. Then we saw it: not one rainbow... a DOUBLE rainbow! Rainbows happen when there is sunshine and water in the air. My mum and I were so happy!',
+    gaps:[ {s:'A double rainbow has ___ rainbows.', a:['two']},
+           {s:'Rainbows happen when there is ___ and water.', a:['sunshine']} ],
+    extras:['three','snow'],
+    build:'There are two rainbows in the sky.',
+    starters:['I can see','There are','Dan and his mum are'],
+    words:['rainbow','two','colours','waterfall','happy','sunny','mum']
+  },
+  { id:'geysers', name:'Geysers', color:'#00A6B0', pin:[156,184],
+    media:[
+      {vid:'v0328.mp4', poster:'v0328.jpg', place:'Strokkur', cap:'Wait for it... WHOOSH!'},
+      {vid:'v0320.mp4', poster:'v0320.jpg', place:'Geysir', cap:'Bubbling water and steam everywhere!'}
+    ],
+    story:'A geyser is a hole in the ground with very hot water. We waited and waited next to the geyser. Then... WHOOSH! The water jumped high into the sky! There was a big white cloud of steam. Watch the videos!',
+    gaps:[ {s:'The water in a geyser is very ___.', a:['hot']},
+           {s:'There was a big cloud of ___.', a:['steam']} ],
+    extras:['cold','sand'],
+    build:'The hot water jumped into the sky.',
+    starters:['I can see','The water is','The geyser is'],
+    words:['geyser','hot','water','steam','sky','high','people']
+  },
+  { id:'turquoise', name:'Turquoise water', color:'#00C2CB', pin:[126,202],
+    media:[
+      {vid:'v0251.mp4', poster:'v0251.jpg', place:'Bruarfoss', cap:'The bluest river ever!'},
+      {img:'p6538.jpg', place:'Bruarfoss', cap:'Waving from the bridge.'}
+    ],
+    story:'Look at this river! The water is not blue and it is not green. It is turquoise! It is very clear and it runs very fast. I stood on a little wooden bridge and waved to my mum.',
+    gaps:[ {s:'The water is ___.', a:['turquoise']},
+           {s:'I stood on a wooden ___.', a:['bridge']} ],
+    extras:['brown','boat'],
+    build:'The river is turquoise and very fast.',
+    starters:['I can see','The river is','Dan is waving from'],
+    words:['river','turquoise','fast','clear','bridge','rocks','waterfall']
+  },
+  { id:'diamond', name:'Diamond Beach', color:'#3B3B3B', pin:[300,226],
+    media:[
+      {img:'p7466.jpg', place:'Diamond Beach', cap:'Look! It’s Argentina! I’m showing it where home is.'},
+      {img:'p7483.jpg', place:'Diamond Beach', cap:'Catch the ice!'}
+    ],
+    story:'Diamond Beach has black sand and giant pieces of ice. The ice shines like diamonds! I found a piece of ice with the shape of Argentina. I showed it where Argentina is: far, far away in the south! Then I threw some ice into the air.',
+    gaps:[ {s:'The sand on Diamond Beach is ___.', a:['black']},
+           {s:'The ice has the shape of ___.', a:['Argentina']} ],
+    extras:['yellow','Brazil'],
+    build:'I found ice with the shape of Argentina.',
+    starters:['I can see','The ice is','Dan is throwing'],
+    words:['beach','black','sand','ice','sea','Argentina','cloudy']
+  },
+  { id:'icebergs', name:'Icebergs & seals', color:'#3FA9F5', pin:[276,202],
+    media:[
+      {img:'p1004.jpg', place:'Jokulsarlon', cap:'Me and a giant iceberg. Brrr!'},
+      {vid:'v1091.mp4', poster:'v1091.jpg', place:'Jokulsarlon', cap:'Icebergs floating in the lagoon.'}
+    ],
+    story:'Next to Diamond Beach there is a lagoon full of icebergs. Some icebergs are as big as a house! They are white and bright blue. Seals were swimming near the icebergs. It was very cold, so I wore my hat.',
+    gaps:[ {s:'___ are big pieces of ice in the water.', a:['Icebergs']},
+           {s:'___ were swimming near the icebergs.', a:['Seals']} ],
+    extras:['Penguins','Volcanoes'],
+    build:'The icebergs are white and blue.',
+    starters:['I can see','The iceberg is','Dan is wearing'],
+    words:['iceberg','seal','blue','white','cold','hat','floating']
+  },
+  { id:'sunsets', name:'Sunsets', color:'#FF7A1A', pin:[180,276],
+    media:[
+      {img:'p0443.jpg', place:'South Iceland', cap:'The sun goes down over the rocks.'},
+      {img:'p0729.jpg', place:'Black beach', cap:'A pink and orange sky on a black beach.'}
+    ],
+    story:'In Iceland the sunsets are long and beautiful. The sun goes down slowly at the end of the day. The sky turned orange, pink and yellow. We sat on the beach and watched the colours.',
+    gaps:[ {s:'A sunset happens when the Sun goes ___ at the end of the day.', a:['down']},
+           {s:'The sky turned orange and ___.', a:['pink']} ],
+    extras:['up','green'],
+    build:'The sun goes down at the end of the day.',
+    starters:['I can see','The sky is','The sun is'],
+    words:['sunset','sun','sky','orange','pink','clouds','beach']
+  },
+  { id:'rocks', name:'Strange rocks', color:'#8C7A5B', pin:[208,258],
+    media:[
+      {img:'p7172.jpg', place:'Reynisfjara', cap:'My giant rock chair!'}
+    ],
+    story:'On a black beach we found very strange rocks. They look like giant pencils or a big staircase! A long time ago, hot lava cooled down and made these shapes. You can sit on them, so I climbed up and sat like a king.',
+    gaps:[ {s:'The rocks look like a big ___.', a:['staircase']},
+           {s:'I climbed up and ___ on the rocks.', a:['sat']} ],
+    extras:['car','swam'],
+    build:'I sat on the strange rocks.',
+    starters:['I can see','The rocks look like','Dan is sitting on'],
+    words:['rocks','strange','grey','tall','beach','sky','king']
+  },
+  { id:'viking', name:'Viking ship', color:'#B3121B', pin:[327,197],
+    media:[
+      {img:'p1174.jpg', place:'Stokksnes', cap:'Captain Dan on the Viking ship!'},
+      {img:'p1175.jpg', place:'Stokksnes', cap:'Look at the round shields!'}
+    ],
+    story:'The Vikings lived in Iceland a long time ago. They sailed on long wooden ships with round shields on the sides. We travelled on a Viking ship through the fjords! A fjord is a long arm of sea between tall mountains. I stood at the front like a real Viking!',
+    gaps:[ {s:'The ship has round ___ on the side.', a:['shields']},
+           {s:'A fjord has tall ___ on both sides.', a:['mountains']} ],
+    extras:['wheels','trees'],
+    build:'We travelled on a Viking ship.',
+    starters:['I can see','The ship is','Dan is standing on'],
+    words:['Viking','ship','shields','mountains','clouds','houses','wooden']
+  },
+  { id:'aurora', name:'Northern lights', color:'#16C060', pin:[200,60],
+    media:[
+      {img:'p1721.jpg', place:'Iceland at night', cap:'FINALLY! The sky is dancing!'},
+      {img:'p1722.jpg', place:'Iceland at night', cap:'Green lights everywhere!'}
+    ],
+    story:'Every night, my mum and I looked up at the sky. We waited and waited... and one night, finally, we saw them: the NORTHERN LIGHTS! The sky was bright green and the lights were dancing. Northern lights appear at night, but they are caused by activity from the Sun.',
+    gaps:[ {s:'The northern lights were bright ___.', a:['green']},
+           {s:'Northern lights appear at ___.', a:['night']} ],
+    extras:['orange','lunchtime'],
+    build:'Finally we saw the northern lights.',
+    starters:['I can see','The sky is','The lights are'],
+    words:['northern lights','green','night','stars','sky','mountains','dancing']
+  }
+];
+
+/* Actividad 1 del libro: unir palabras con fotos */
+var MATCH = [
+  {w:'volcano', img:'p1390.jpg'}, {w:'waterfall', img:'v0777.jpg'},
+  {w:'rainbow', img:'p6938.jpg'}, {w:'geyser', img:'v0328.jpg'},
+  {w:'iceberg', img:'p1004.jpg'}, {w:'sunset', img:'p0443.jpg'},
+  {w:'northern lights', img:'p1722.jpg'}, {w:'Viking ship', img:'p1174.jpg'}
+];
+
+/* Actividad 3 del libro: que foto describe Dan */
+var RIDDLES = [
+  {q:'It is very hot water. It jumps out of the ground and into the sky. WHOOSH!', img:'v0328.jpg'},
+  {q:'They are green and they dance in the sky at night.', img:'p1721.jpg'},
+  {q:'There are two of them and they have lots of colours.', img:'p6938.jpg'},
+  {q:'It is big, white and blue, and it floats in the water.', img:'p1004.jpg'},
+  {q:'It is long and wooden, and it has round shields on the side.', img:'p1174.jpg'},
+  {q:'The sky is orange and the Sun is going down.', img:'p0443.jpg'}
+];
+
+/* =========================================================
+   ENGINE
+   ========================================================= */
+var KEY = 'dan-journey-v1';
+var st = load();
+function load(){
+  var d = null;
+  try { d = JSON.parse(localStorage.getItem(KEY)); } catch(e){}
+  d = d || {};
+  d.stops = d.stops || {}; d.match = d.match || {}; d.riddles = d.riddles || {}; d.page = d.page || 0;
+  return d;
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} }
+function S(id){ return st.stops[id] || (st.stops[id] = {a:false,b:false,w:''}); }
+
+function shuffle(a){ for (var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function rot(i){ return ((i*37)%7 - 3) * 0.8 + 'deg'; }
+function stopDone(s){ var x = st.stops[s.id]; return !!(x && x.a && x.b && x.w); }
+
+/* paginas del libro: portada, ruta, calentamiento, 11 paradas, adivinanzas, diario */
+var PAGES = [{t:'cover'},{t:'route'},{t:'match'}];
+STOPS.forEach(function(s,i){ PAGES.push({t:'stop', i:i}); });
+PAGES.push({t:'riddles'}); PAGES.push({t:'journal'});
+var cur = Math.min(st.page, PAGES.length-1);
+/* #p5 en la URL abre directo esa pagina (sirve para mandar el link de una parada) */
+var hm = /^#p(\d+)$/.exec(location.hash); if (hm) cur = Math.min(+hm[1], PAGES.length-1);
+
+var pL = document.getElementById('pL'), pR = document.getElementById('pR');
+var book = document.getElementById('book');
+
+/* estado efimero de los ejercicios de la pagina abierta */
+var live = {};
+
+function render(){
+  var p = PAGES[cur];
+  live = {};
+  var color = p.t==='stop' ? STOPS[p.i].color : ({cover:'#1B4F8C', route:'#FFD23F', match:'#FF3D7F', riddles:'#7B3FF2', journal:'#00C2CB'})[p.t];
+  book.style.setProperty('--c', color);
+  if (p.t==='cover') renderCover();
+  else if (p.t==='route') renderRoute();
+  else if (p.t==='match') renderMatch();
+  else if (p.t==='stop') renderStop(STOPS[p.i]);
+  else if (p.t==='riddles') renderRiddles();
+  else renderJournal();
+  pL.insertAdjacentHTML('beforeend','<span class="pnum">'+(cur*2+1)+'</span>');
+  pR.insertAdjacentHTML('beforeend','<span class="pnum">'+(cur*2+2)+'</span>');
+  pL.classList.toggle('cover-left', p.t==='cover');
+  document.getElementById('prev').disabled = cur===0;
+  document.getElementById('next').disabled = cur===PAGES.length-1;
+  var label = p.t==='stop' ? 'Stop '+(p.i+1)+' of '+STOPS.length : ({cover:'Cover', route:'Our route', match:'Warm-up', riddles:'Guess the photo', journal:'My journal'})[p.t];
+  document.getElementById('where').textContent = label + '  ·  ' + (cur+1) + '/' + PAGES.length;
+  renderShields();
+  st.page = cur; save();
+  try { history.replaceState(null,'','#p'+cur); } catch(e){}
+}
+
+function renderShields(){
+  var h = '<span class="lbl">Viking shields: '+STOPS.filter(stopDone).length+'/'+STOPS.length+'</span>';
+  STOPS.forEach(function(s,i){
+    h += '<button class="shield'+(stopDone(s)?' done':'')+'" data-go="'+(i+3)+'" title="Stop '+(i+1)+': '+esc(s.name)+'"><span>'+(i+1)+'</span></button>';
+  });
+  document.getElementById('shields').innerHTML = h;
+}
+
+/* ---------- portada ---------- */
+var SHIP_SVG =
+ '<svg class="ship" viewBox="0 0 420 250" aria-label="A Viking ship">'+
+ '<path d="M206 30 L206 150" stroke="#141414" stroke-width="7"/>'+
+ '<path d="M120 46 Q206 30 292 46 L282 140 Q206 128 130 140 Z" fill="#fff" stroke="#141414" stroke-width="5"/>'+
+ '<path d="M150 43 L148 138 M178 39 L176 132 M234 39 L236 132 M262 43 L264 138" stroke="#EF2B2D" stroke-width="16"/>'+
+ '<path d="M120 46 Q206 30 292 46 L282 140 Q206 128 130 140 Z" fill="none" stroke="#141414" stroke-width="5"/>'+
+ '<path d="M30 150 Q60 205 140 205 L290 205 Q370 205 392 150 Z" fill="#8B5A2B" stroke="#141414" stroke-width="5"/>'+
+ '<path d="M30 150 Q14 120 22 92 Q30 70 52 76 Q66 82 58 98 Q50 108 40 100" fill="none" stroke="#141414" stroke-width="16" stroke-linecap="round"/>'+
+ '<path d="M30 150 Q14 120 22 92 Q30 70 52 76 Q66 82 58 98 Q50 108 40 100" fill="none" stroke="#8B5A2B" stroke-width="8" stroke-linecap="round"/>'+
+ '<circle cx="44" cy="84" r="4" fill="#FFD23F" stroke="#141414" stroke-width="2"/>'+
+ '<path d="M392 150 Q408 128 404 104 Q398 88 384 96" fill="none" stroke="#141414" stroke-width="14" stroke-linecap="round"/>'+
+ '<path d="M392 150 Q408 128 404 104 Q398 88 384 96" fill="none" stroke="#8B5A2B" stroke-width="6" stroke-linecap="round"/>'+
+ '<path d="M60 172 L370 172" stroke="#141414" stroke-width="3"/>'+
+ '<g stroke="#141414" stroke-width="4">'+
+ '<circle cx="100" cy="162" r="17" fill="#EF2B2D"/><circle cx="148" cy="164" r="17" fill="#FFD23F"/>'+
+ '<circle cx="196" cy="164" r="17" fill="#2D7DD2"/><circle cx="244" cy="164" r="17" fill="#EF2B2D"/>'+
+ '<circle cx="292" cy="164" r="17" fill="#FFD23F"/><circle cx="338" cy="162" r="17" fill="#16C060"/></g>'+
+ '<g fill="#141414"><circle cx="100" cy="162" r="5"/><circle cx="148" cy="164" r="5"/><circle cx="196" cy="164" r="5"/><circle cx="244" cy="164" r="5"/><circle cx="292" cy="164" r="5"/><circle cx="338" cy="162" r="5"/></g>'+
+ '<path d="M0 214 Q26 196 52 214 T104 214 T156 214 T208 214 T260 214 T312 214 T364 214 T420 214 L420 250 L0 250 Z" fill="#00C2CB" stroke="#141414" stroke-width="5"/>'+
+ '<path d="M206 30 L236 20 L206 12 Z" fill="#FFD23F" stroke="#141414" stroke-width="4"/>'+
+ '</svg>';
+
+function renderCover(){
+  pL.innerHTML =
+    '<span class="label" style="transform:rotate(-3deg)">English 1 · Travel flipbook</span>'+
+    '<h2 class="sticker" style="margin-top:16px">Dan’s trip<br>to Iceland</h2>'+
+    SHIP_SVG+
+    '<div class="hand by" style="color:#fff;font-size:1.15rem">A photo-journey by Dan (and his mum!)</div>'+
+    '<button class="btn bigbtn" data-go="1">Open the book &#9654;</button>';
+  pR.innerHTML =
+    '<div class="tape" style="top:-6px;right:40px;transform:rotate(6deg)"></div>'+
+    '<div class="story"><b class="who">Dan says:</b>Hi! I’m Dan. My mum and I travelled to Iceland. We wanted to see the <b>northern lights</b>! On the way, we found lots of natural miracles: volcanoes, waterfalls, geysers, icebergs... Turn the pages and come on the journey with us!</div>'+
+    '<div class="goal"><div class="t">We are going to...</div><ul><li>describe natural places and events.</li><li>write our own sentences about photos and videos.</li></ul></div>'+
+    '<h3 style="text-transform:uppercase;margin-bottom:6px">How it works</h3>'+
+    '<ul class="howto">'+
+    '<li><span class="dot" style="background:var(--rojo)">1</span><span>Look at the photos and <b>watch the videos</b> on the left page.</span></li>'+
+    '<li><span class="dot" style="background:var(--azul)">2</span><span>Read Dan’s story and <b>complete the sentences</b> with the words in the box.</span></li>'+
+    '<li><span class="dot" style="background:var(--violeta)">3</span><span><b>Build a sentence</b> with the word tiles.</span></li>'+
+    '<li><span class="dot" style="background:var(--verde)">4</span><span><b>Write your own sentence</b> and stick it in your journal.</span></li>'+
+    '<li><span class="dot" style="background:var(--naranja)">★</span><span>Finish a stop and win a <b>Viking shield</b>!</span></li>'+
+    '</ul>';
+}
+
+/* ---------- mapa de la ruta ---------- */
+var ICELAND = 'M65 232 L62 212 L80 214 L92 204 L85 190 L92 172 L71 152 L20 148 L40 138 L88 112 L60 104 L3 96 L20 75 L51 50 L60 30 L75 20 L95 35 L105 56 L120 70 L139 88 L145 60 L153 46 L170 56 L185 45 L194 42 L204 48 L221 82 L215 55 L230 45 L245 52 L255 40 L270 22 L289 14 L305 30 L316 40 L330 32 L343 26 L352 50 L345 70 L368 80 L377 114 L362 130 L368 145 L350 164 L340 180 L327 197 L320 196 L300 212 L272 232 L230 248 L194 264 L190 262 L160 248 L130 238 L109 228 L75 230 Z';
+function renderRoute(){
+  var pins = '';
+  STOPS.forEach(function(s,i){
+    var x = s.pin[0], y = s.pin[1];
+    pins += '<g class="pin" data-go="'+(i+3)+'" transform="translate('+x+' '+y+')"><title>'+esc(s.name)+'</title>'+
+      '<circle r="11" fill="'+s.color+'" stroke="#141414" stroke-width="3"/>'+
+      '<text y="4.5" text-anchor="middle" font-family="Arial Black,Arial" font-size="12" fill="#fff" stroke="#141414" stroke-width="2.5" paint-order="stroke">'+(i+1)+'</text></g>';
+  });
+  pL.innerHTML =
+    '<span class="label">Our route</span>'+
+    '<h2 class="stopname sticker">Map of Iceland</h2>'+
+    '<svg class="map" viewBox="-10 -10 410 300" role="img" aria-label="A map of Iceland with the stops of the trip">'+
+    '<rect x="-10" y="-10" width="410" height="300" rx="14" fill="#2D7DD2" stroke="#141414" stroke-width="5"/>'+
+    '<path d="M-10 270 Q30 260 60 272 T130 270 T200 280 T270 272 T340 280 T400 270" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="3"/>'+
+    '<path d="M150 10 Q180 -6 210 14 T260 10 T300 18" fill="none" stroke="#16C060" stroke-width="9" stroke-linecap="round" opacity=".9"/>'+
+    '<path d="'+ICELAND+'" fill="#FFF8E7" stroke="#141414" stroke-width="5" stroke-linejoin="round" transform="translate(4 4)" opacity=".35"/>'+
+    '<path d="'+ICELAND+'" fill="#9FD86B" stroke="#141414" stroke-width="5" stroke-linejoin="round"/>'+
+    '<path d="M180 120 Q200 100 230 112 Q250 140 220 150 Q190 152 180 120Z M270 150 Q300 140 310 168 Q290 186 268 172Z" fill="#fff" stroke="#141414" stroke-width="3"/>'+
+    '<ellipse cx="138" cy="272" rx="16" ry="7" fill="#9FD86B" stroke="#141414" stroke-width="3"/>'+
+    '<g transform="translate(92 204)"><rect x="-4" y="-4" width="8" height="8" fill="#141414"/><text x="-8" y="16" font-family="Comic Sans MS,cursive" font-size="12" fill="#141414">Reykjavík</text></g>'+
+    '<text x="296" y="270" font-family="Comic Sans MS,cursive" font-size="13" fill="#fff">Atlantic Ocean</text>'+
+    pins+'</svg>'+
+    '<p class="hand" style="text-align:center;color:#141414;font-size:1.05rem">Tap a pin to jump to that stop!</p>';
+  var li = '';
+  STOPS.forEach(function(s,i){
+    li += '<li><button data-go="'+(i+3)+'"><span class="num" style="background:'+s.color+'">'+(i+1)+'</span>'+esc(s.name)+
+      (stopDone(s)?'<span class="tick">✔</span>':'')+'</button></li>';
+  });
+  pR.innerHTML =
+    '<div class="story"><b class="who">Dan says:</b>We drove all around the south of Iceland. Every stop was a new surprise! The best surprise came at the very end...</div>'+
+    '<h3 style="text-transform:uppercase;margin-bottom:10px">The stops</h3>'+
+    '<ul class="stoplist">'+li+'</ul>';
+}
+
+/* ---------- calentamiento: unir palabras y fotos ---------- */
+var matchOrder = null, wordOrder = null;
+function renderMatch(){
+  if (!matchOrder){ matchOrder = shuffle(MATCH.slice()); wordOrder = shuffle(MATCH.map(function(m){return m.w;})); }
+  var g = '';
+  matchOrder.forEach(function(m,i){
+    var done = st.match[m.w];
+    g += '<button class="ph'+(done?' good':'')+'" data-mimg="'+esc(m.w)+'" style="--r:'+rot(i)+'"><span class="let">'+'abcdefgh'[i]+'</span>'+
+      '<img src="'+M+m.img+'" alt="Photo '+'abcdefgh'[i]+'" loading="lazy">'+(done?'<span class="stick">'+esc(m.w)+'</span>':'')+'</button>';
+  });
+  pL.innerHTML = '<span class="label">Warm-up</span><h2 class="stopname sticker">Natural miracles</h2><div class="grid">'+g+'</div>';
+  var w = '';
+  wordOrder.forEach(function(x){ w += '<button class="chip'+(st.match[x]?' used':'')+'" data-mword="'+esc(x)+'">'+esc(x)+'</button>'; });
+  var n = Object.keys(st.match).length;
+  pR.innerHTML =
+    '<div class="task"><h3><span class="n">1</span>Vocabulary</h3>'+
+    '<p style="margin-top:0">Which natural miracles have <b>you</b> seen? Where? <b>Match the words to the photos.</b><br><span class="hand">Tap a word, then tap its photo.</span></p>'+
+    '<div class="wordbox">'+w+'</div>'+
+    '<div class="fb" id="mfb">'+(n===MATCH.length?'Brilliant! All the photos have their names. Now open the next page!':n+' / '+MATCH.length+' matched')+'</div></div>'+
+    '<div class="story"><b class="who">Talk with a friend:</b>Which of these places would you like to visit? Why? <span class="hand">“I would like to see the ... because ...”</span></div>'+
+    (n?'<button class="btn ghost" data-reset="match">Start again</button>':'');
+}
+
+/* ---------- parada ---------- */
+function mediaHTML(m){
+  if (m.vid) return '<span class="vidtag">VIDEO</span><video src="'+M+m.vid+'" poster="'+M+m.poster+'" controls muted loop playsinline preload="metadata"></video>';
+  return '<img src="'+M+m.img+'" alt="'+esc(m.cap)+'">';
+}
+function renderStop(s){
+  var x = S(s.id), idx = s.id;
+  var m0 = s.media[0];
+  var th = '';
+  if (s.media.length>1) s.media.forEach(function(m,i){
+    th += '<button class="thumb'+(i===0?' on':'')+'" data-media="'+i+'" style="--r:'+rot(i)+'" aria-label="'+esc(m.cap)+'"><img src="'+M+(m.img||m.poster)+'" alt="" loading="lazy">'+(m.vid?'<span class="play"></span>':'')+'</button>';
+  });
+  pL.innerHTML =
+    '<span class="label">Stop '+(STOPS.indexOf(s)+1)+'</span>'+
+    '<h2 class="stopname sticker">'+esc(s.name)+'</h2>'+
+    '<div class="polaroid"><div class="tape t1"></div><div class="tape t2"></div>'+
+    '<div class="media" id="media" style="position:relative">'+mediaHTML(m0)+'</div>'+
+    '<div class="cap" id="cap"><span class="place">'+esc(m0.place)+'</span>'+esc(m0.cap)+'</div></div>'+
+    (th?'<div class="thumbs">'+th+'</div>':'');
+
+  /* tarea A: completar con el word box */
+  var answers = []; s.gaps.forEach(function(g){ answers = answers.concat(g.a); });
+  live.answers = answers;
+  live.fill = x.a ? answers.slice() : answers.map(function(){ return ''; });
+  live.sel = 0;
+  live.box = shuffle(answers.concat(s.extras));
+  /* tarea B: armar la oracion */
+  var target = s.build.split(' ');
+  var tiles = target.map(function(t,i){ return {w:t, k:i}; });
+  do { shuffle(tiles); } while (tiles.length>2 && tiles.map(function(t){return t.w;}).join(' ')===s.build);
+  live.tiles = tiles; live.built = x.b ? target.map(function(t,i){ return {w:t,k:i}; }) : [];
+  live.stop = s;
+
+  pR.innerHTML =
+    '<div class="story"><b class="who">Dan says:</b>'+esc(s.story)+'</div>'+
+    '<div class="task" id="tA"></div><div class="task" id="tB"></div><div class="task" id="tC"></div>';
+  drawA(); drawB(); drawC();
+}
+function okTag(b){ return b ? '<span class="ok">Done!</span>' : ''; }
+function drawA(){
+  var s = live.stop, x = S(s.id), k = 0;
+  var used = {}; live.fill.forEach(function(w){ if (w) used[w] = (used[w]||0)+1; });
+  var box = '';
+  live.box.forEach(function(w){
+    var u = used[w] > 0; if (u) used[w]--;
+    box += '<button class="chip'+(u?' used':'')+'" data-chip="'+esc(w)+'"'+(u||x.a?' disabled':'')+'>'+esc(w)+'</button>';
+  });
+  var sents = '';
+  s.gaps.forEach(function(g,gi){
+    var parts = g.s.split('___'), h = '<span class="let">'+'ab'[gi]+'</span>';
+    parts.forEach(function(p,pi){
+      h += esc(p);
+      if (pi < parts.length-1){
+        var i = k++, w = live.fill[i];
+        var cls = 'gap' + (w?' full':'') + (x.a?' good':'') + (!x.a && live.sel===i?' sel':'') + (live.marks && live.marks[i]===false?' bad':'');
+        h += '<button class="'+cls+'" data-gap="'+i+'"'+(x.a?' disabled':'')+'>'+(w?esc(w):'&nbsp;')+'</button>';
+      }
+    });
+    sents += '<div class="sent">'+h+'</div>';
+  });
+  document.getElementById('tA').innerHTML =
+    '<h3><span class="n">A</span>Complete the sentences'+okTag(x.a)+'</h3>'+
+    '<div class="wordbox">'+box+'</div>'+sents+
+    (x.a ? '<div class="fb yes">Great job! Both sentences are correct.</div>' :
+      '<div class="row"><button class="btn" data-check="A">Check</button><span class="fb" id="fbA">'+(live.fbA||'')+'</span></div>');
+  live.marks = null;
+}
+function drawB(){
+  var s = live.stop, x = S(s.id);
+  var inAns = {}; live.built.forEach(function(t){ inAns[t.k] = 1; });
+  var tray = '', ans = '';
+  live.tiles.forEach(function(t){ if (!inAns[t.k]) tray += '<button class="tile" data-tile="'+t.k+'">'+esc(t.w)+'</button>'; });
+  live.built.forEach(function(t,i){ ans += '<button class="tile" data-untile="'+i+'"'+(x.b?' disabled':'')+'>'+esc(t.w)+'</button>'; });
+  document.getElementById('tB').innerHTML =
+    '<h3><span class="n">B</span>Build the sentence'+okTag(x.b)+'</h3>'+
+    (x.b ? '' : '<div class="tray">'+tray+'</div>')+
+    '<div class="answer'+(x.b?' good':'')+(live.badB?' bad':'')+'">'+ans+'</div>'+
+    (x.b ? '<div class="fb yes">Perfect sentence!</div>' :
+      '<div class="row"><button class="btn" data-check="B">Check</button><button class="btn ghost" data-clear="B">Clear</button><span class="fb" id="fbB">'+(live.fbB||'')+'</span></div>');
+  live.badB = false;
+}
+function drawC(){
+  var s = live.stop, x = S(s.id);
+  var st1 = '';
+  s.starters.forEach(function(w){ st1 += '<button class="starter" data-ins="'+esc(w)+'">'+esc(w)+' ...</button>'; });
+  var st2 = '';
+  s.words.forEach(function(w){ st2 += '<button class="starter w" data-ins="'+esc(w)+'">'+esc(w)+'</button>'; });
+  document.getElementById('tC').innerHTML =
+    '<h3><span class="n">C</span>Your turn! Write a sentence'+okTag(!!x.w)+'</h3>'+
+    '<p style="margin:0 0 6px">Look at the photos and videos. What can you see? Write <b>your own</b> sentence.</p>'+
+    '<div class="starters">'+st1+'</div><div class="starters">'+st2+'</div>'+
+    '<textarea id="wr" placeholder="I can see ..." maxlength="240">'+esc(live.draft!=null?live.draft:x.w)+'</textarea>'+
+    '<div class="row"><button class="btn" data-stick="1">&#9986; Stick it in my journal</button><span class="fb" id="fbC"></span></div>';
+}
+
+/* ---------- adivinanzas ---------- */
+var riddleOpts = null;
+function renderRiddles(){
+  if (!riddleOpts) riddleOpts = RIDDLES.map(function(r,i){
+    var others = shuffle(RIDDLES.filter(function(o,j){ return j!==i; })).slice(0,2).map(function(o){ return o.img; });
+    return shuffle([r.img].concat(others));
+  });
+  var half = Math.ceil(RIDDLES.length/2);
+  function block(from,to){
+    var h = '';
+    for (var i=from;i<to;i++){
+      var r = RIDDLES[i], ans = st.riddles[i];
+      var o = '';
+      riddleOpts[i].forEach(function(img,j){
+        var cls = 'ph' + (ans && img===r.img ? ' good' : '');
+        o += '<button class="'+cls+'" data-riddle="'+i+'" data-img="'+img+'" style="--r:'+rot(i+j)+'"><span class="let">'+'abc'[j]+'</span><img src="'+M+img+'" alt="Photo '+'abc'[j]+'" loading="lazy"></button>';
+      });
+      h += '<div class="riddle"><p><b>'+(i+1)+'.</b> '+esc(r.q)+(ans?' <b style="color:#0B7A2E">✔</b>':'')+'</p><div class="ropts">'+o+'</div></div>';
+    }
+    return h;
+  }
+  var n = Object.keys(st.riddles).length;
+  pL.innerHTML = '<span class="label">Quiz time</span><h2 class="stopname sticker">Guess the photo</h2>'+
+    '<p style="margin-top:0;color:#fff;font-weight:bold;text-shadow:2px 2px 0 #141414">Read what Dan says. Which photo is he describing?</p>'+block(0,half);
+  pR.innerHTML = block(half,RIDDLES.length)+'<div class="fb'+(n===RIDDLES.length?' yes':'')+'">'+(n===RIDDLES.length?'Wow! You guessed them all. You are a real Viking explorer!':n+' / '+RIDDLES.length+' guessed')+'</div>';
+}
+
+/* ---------- diario ---------- */
+function renderJournal(){
+  var shields = STOPS.filter(stopDone).length;
+  var ent = '', any = false;
+  STOPS.forEach(function(s,i){
+    var w = S(s.id).w;
+    if (!w) return; any = true;
+    var m = s.media[0];
+    ent += '<div class="jentry"><img src="'+M+(m.img||m.poster)+'" alt=""><div><div class="k">Stop '+(i+1)+' · '+esc(s.name)+'</div><div class="s">'+esc(w)+'</div></div></div>';
+  });
+  pL.innerHTML =
+    '<span class="label">The end... or is it?</span>'+
+    '<h2 class="stopname sticker">My Iceland journal</h2>'+
+    '<div class="polaroid" style="transform:rotate(2deg)"><div class="tape t1"></div><div class="tape t2"></div>'+
+    '<div class="media"><img src="'+M+'p1721.jpg" alt="The northern lights"></div>'+
+    '<div class="cap">We did it! We found the northern lights!</div></div>';
+  pR.innerHTML =
+    '<div class="score"><div>Shields: '+shields+'/'+STOPS.length+'</div><div>Warm-up: '+Object.keys(st.match).length+'/'+MATCH.length+'</div><div>Quiz: '+Object.keys(st.riddles).length+'/'+RIDDLES.length+'</div></div>'+
+    '<h3 style="text-transform:uppercase;margin-bottom:10px">My sentences about Iceland</h3>'+
+    (any ? ent : '<p class="hand">Your journal is empty. Go to a stop and write your own sentence in task C!</p>')+
+    '<div class="row no-print"><button class="btn" data-print="1">Print my journal</button><button class="btn ghost" data-reset="all">Start the trip again</button></div>';
+}
+
+/* ---------- navegacion con vuelta de pagina ---------- */
+var busy = false;
+function go(n){
+  n = Math.max(0, Math.min(PAGES.length-1, n));
+  if (n===cur || busy) return;
+  var dir = n>cur ? 'next' : 'prev';
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  stopVideos();
+  if (reduce){ cur = n; render(); toBook(); return; }
+  busy = true;
+  book.classList.add('out-'+dir);
+  setTimeout(function(){
+    book.classList.remove('out-'+dir);
+    cur = n; render();
+    book.classList.add('in-'+dir);
+    setTimeout(function(){ book.classList.remove('in-'+dir); busy = false; }, 340);
+    toBook();
+  }, 270);
+}
+function toBook(){ var r = book.getBoundingClientRect(); if (r.top < 0) window.scrollTo({top: window.scrollY + r.top - 10, behavior:'smooth'}); }
+function stopVideos(){ document.querySelectorAll('video').forEach(function(v){ try{ v.pause(); }catch(e){} }); }
+
+/* ---------- clicks ---------- */
+var pickedWord = null;
+document.addEventListener('click', function(e){
+  var b = e.target.closest('button, .pin'); if (!b) return;
+  var d = b.dataset || {}, gattr = b.getAttribute('data-go');
+  if (gattr!=null){ go(+gattr); return; }
+  if (b.id==='prev'){ go(cur-1); return; }
+  if (b.id==='next'){ go(cur+1); return; }
+
+  /* fotos de la parada */
+  if (d.media!=null){
+    var s = live.stop, m = s.media[+d.media];
+    stopVideos();
+    document.getElementById('media').innerHTML = mediaHTML(m);
+    document.getElementById('cap').innerHTML = '<span class="place">'+esc(m.place)+'</span>'+esc(m.cap);
+    document.querySelectorAll('.thumb').forEach(function(t){ t.classList.toggle('on', t===b); });
+    return;
+  }
+  /* tarea A */
+  if (d.gap!=null){
+    var i = +d.gap;
+    if (live.fill[i]){ live.fill[i] = ''; }
+    live.sel = i; live.fbA = ''; drawA(); return;
+  }
+  if (d.chip!=null){
+    var empty = live.fill[live.sel] ? live.fill.indexOf('') : live.sel;
+    if (empty<0) return;
+    live.fill[empty] = d.chip;
+    var nx = live.fill.indexOf(''); live.sel = nx<0 ? empty : nx;
+    live.fbA = ''; drawA(); return;
+  }
+  if (d.check==='A'){
+    if (live.fill.indexOf('')>=0){ live.fbA = 'Fill all the gaps first!'; drawA(); setFb('fbA','no'); return; }
+    var marks = live.fill.map(function(w,i){ return w===live.answers[i]; });
+    if (marks.every(Boolean)){ S(live.stop.id).a = true; save(); drawA(); renderShields(); return; }
+    live.marks = marks; live.fbA = 'Not yet! Look at the red gap and try again.';
+    drawA(); setFb('fbA','no');
+    live.fill = live.fill.map(function(w,i){ return marks[i] ? w : ''; });
+    live.sel = live.fill.indexOf('');
+    setTimeout(function(){ if (document.getElementById('tA')) drawA(); setFb('fbA','no'); }, 900);
+    return;
+  }
+  /* tarea B */
+  if (d.tile!=null){
+    var t = live.tiles.filter(function(q){ return q.k===+d.tile; })[0];
+    live.built.push(t); live.fbB=''; drawB(); return;
+  }
+  if (d.untile!=null){ live.built.splice(+d.untile,1); live.fbB=''; drawB(); return; }
+  if (d.clear==='B'){ live.built = []; live.fbB=''; drawB(); return; }
+  if (d.check==='B'){
+    var s2 = live.stop;
+    if (live.built.length < live.tiles.length){ live.fbB = 'Use all the words!'; drawB(); setFb('fbB','no'); return; }
+    if (live.built.map(function(q){return q.w;}).join(' ')===s2.build){ S(s2.id).b = true; save(); drawB(); renderShields(); return; }
+    live.fbB = 'Almost! Check the order of the words.'; live.badB = true; drawB(); setFb('fbB','no'); return;
+  }
+  /* tarea C */
+  if (d.ins!=null){
+    var ta = document.getElementById('wr'), v = ta.value, add = d.ins;
+    if (v && !/\s$/.test(v)) add = ' '+add;
+    ta.value = (v + add + ' ').slice(0,240); ta.focus(); live.draft = ta.value; return;
+  }
+  if (d.stick){
+    var ta2 = document.getElementById('wr'), txt = ta2.value.replace(/\s+/g,' ').trim();
+    var words = txt ? txt.split(' ').length : 0;
+    var fb = document.getElementById('fbC');
+    if (words < 3){ fb.textContent = 'Write a longer sentence: at least 3 words!'; fb.className='fb no'; return; }
+    if (!/[.!?]$/.test(txt)) txt += '.';
+    txt = txt.charAt(0).toUpperCase() + txt.slice(1);
+    S(live.stop.id).w = txt; live.draft = null; save();
+    drawC(); renderShields();
+    var f2 = document.getElementById('fbC'); f2.textContent = 'Stuck in your journal! ✔'; f2.className='fb yes';
+    return;
+  }
+  /* calentamiento */
+  if (d.mword!=null){
+    if (st.match[d.mword]) return;
+    pickedWord = d.mword;
+    document.querySelectorAll('[data-mword]').forEach(function(c){ c.classList.toggle('pick', c===b); });
+    document.querySelectorAll('[data-mimg]').forEach(function(p){ if (!st.match[p.dataset.mimg]) p.classList.add('target'); });
+    return;
+  }
+  if (d.mimg!=null){
+    if (st.match[d.mimg]) return;
+    var fbm = document.getElementById('mfb');
+    if (!pickedWord){ fbm.textContent = 'First tap a word in the box!'; fbm.className='fb no'; return; }
+    if (pickedWord===d.mimg){ st.match[pickedWord] = true; save(); pickedWord = null; renderMatch(); return; }
+    b.classList.remove('bad'); void b.offsetWidth; b.classList.add('bad');
+    fbm.textContent = 'Oops! That photo is not "'+pickedWord+'". Try another one.'; fbm.className='fb no';
+    return;
+  }
+  /* adivinanzas */
+  if (d.riddle!=null){
+    var ri = +d.riddle;
+    if (st.riddles[ri]) return;
+    if (d.img===RIDDLES[ri].img){ st.riddles[ri] = true; save(); renderRiddles(); return; }
+    b.classList.remove('bad'); void b.offsetWidth; b.classList.add('bad'); return;
+  }
+  if (d.print){ window.print(); return; }
+  if (d.reset==='match'){ st.match = {}; save(); matchOrder = null; pickedWord = null; renderMatch(); return; }
+  if (d.reset==='all'){
+    if (!confirm('Start the trip again? Your shields and sentences will be deleted.')) return;
+    st = {stops:{}, match:{}, riddles:{}, page:0}; save(); matchOrder = null; riddleOpts = null; go(0); render(); return;
+  }
+});
+document.addEventListener('input', function(e){ if (e.target.id==='wr') live.draft = e.target.value; });
+function setFb(id, kind){ var f = document.getElementById(id); if (f) f.className = 'fb ' + kind; }
+document.addEventListener('keydown', function(e){
+  if (/TEXTAREA|INPUT/.test(e.target.tagName)) return;
+  if (e.key==='ArrowRight') go(cur+1);
+  if (e.key==='ArrowLeft') go(cur-1);
+});
+
+render();
+</script>
+</body>
+</html>
