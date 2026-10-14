@@ -297,10 +297,12 @@ body.journal-open .rpcard{display:block}
 .ovbox.unlock canvas{width:114px; height:150px; image-rendering:pixelated; display:block; margin:10px auto; animation:bob 1s steps(2) infinite}
 @keyframes bob{50%{transform:translateY(-6px)}}
 #game{width:100%; height:auto; display:block; border:4px solid var(--negro); border-radius:10px; image-rendering:pixelated; touch-action:manipulation; cursor:pointer; background:#0B1636}
-.ovcopy{font-family:var(--titulo); font-size:.75rem; text-align:center; margin:8px 0 0}
+.ovcopy{font-family:var(--cuerpo); font-size:.66rem; letter-spacing:3px; text-transform:uppercase; color:rgba(20,20,20,.55); text-align:center; margin:10px 0 0}
 
-footer{text-align:center; padding:14px 10px 22px; font-family:var(--titulo); font-size:.85rem; letter-spacing:.5px}
-footer span{background:var(--crema); border:3px solid var(--negro); border-radius:10px; padding:4px 12px; display:inline-block}
+/* copyright discreto, tipo pie de pagina de estudio: mayusculas espaciadas, sin caja */
+footer{text-align:center; padding:18px 16px 26px; font-family:var(--cuerpo); font-size:.72rem; font-weight:normal;
+  letter-spacing:3px; text-transform:uppercase; color:rgba(20,20,20,.62)}
+footer span{display:inline-block}
 
 /* ---------- celular: una pagina debajo de la otra ---------- */
 @media (max-width:860px){
