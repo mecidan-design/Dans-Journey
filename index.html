@@ -317,6 +317,24 @@ body.journal-open .rpcard{display:block}
 .midnav{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:center}
 .nav .midnav .btn{font-size:.85rem; padding:8px 14px}
 .nav .btn[hidden]{display:none}
+/* ---------- un solo check por pagina y paginas bloqueadas ---------- */
+.nav{position:relative}
+.checkbar{margin:18px 0 6px; padding-top:14px; border-top:4px dashed var(--negro); text-align:center}
+.bigcheck{font-size:1.1rem; padding:12px 26px; background:var(--verde)}
+.bigcheck.nudge{animation:shake .4s 2}
+.checkbar .fb{margin-top:8px; font-size:1.05rem}
+.fb.big{font-family:var(--titulo); font-size:1.05rem; background:#E4FBD2; border:3px solid var(--negro); border-radius:12px; padding:8px 12px; display:inline-block}
+.nav .btn.locked{background:#9A9A9A}
+.toast{position:absolute; right:0; bottom:calc(100% + 10px); background:var(--amarillo); border:var(--linea); border-radius:12px; box-shadow:var(--sombra-chica);
+  padding:8px 14px; font-family:var(--titulo); font-size:.9rem; max-width:320px; opacity:0; transform:translateY(6px); transition:.2s; pointer-events:none; z-index:5}
+.toast.on{opacity:1; transform:none}
+.opt.on{background:var(--turquesa); color:#fff}
+.tbtn{opacity:.75} .tbtn.on{opacity:1; outline:4px solid var(--amarillo); outline-offset:2px}
+.ph.chosen{outline:5px solid var(--turquesa); outline-offset:2px}
+.ph .stick.try{background:var(--amarillo)}
+.tword.okw{background:var(--lima)}
+.tword[data-sback]{cursor:pointer}
+.tf.wrongtf{border-color:var(--rojo)}
 footer{text-align:center; padding:18px 16px 26px; font-family:var(--cuerpo); font-size:.72rem; font-weight:normal;
   letter-spacing:3px; text-transform:uppercase; color:rgba(20,20,20,.62)}
 footer span{display:inline-block}
@@ -373,6 +391,7 @@ footer span{display:inline-block}
     <button class="btn" id="prev" style="--c:var(--mar)">&#9664; Back</button>
     <div class="midnav"><div class="where" id="where"></div><button class="btn" id="home" style="--c:var(--violeta)" title="Go back to the cover">&#8962; Home</button></div>
     <button class="btn" id="next" style="--c:var(--rojo)">Next &#9654;</button>
+    <div class="toast" id="toast" role="status"></div>
   </nav>
 </div>
 
@@ -482,7 +501,7 @@ var STOPS = [
     cmp:[ {s:'The first rainbow was ___ than the second rainbow.', adj:'bright', a:'brighter', bad:['brightter','more bright'], rule:'er'},
           {s:'This photo is ___ than my school photo!', adj:'beautiful', a:'more beautiful', bad:['beautifuler','beautifuller'], rule:'more'} ],
     build:'Skógafoss is higher than my school.',
-    starters:['The rainbow is','There are two','brighter than','more beautiful than'],
+    starters:['The rainbow is','Skógafoss is','brighter than','more beautiful than'],
     words:['rainbow','sunshine','waterfall','high','beautiful','mum','two']
   },
   { id:'geysers', name:'Geysers', color:'#00A6B0', pin:[156,184],
@@ -706,6 +725,7 @@ PAGES.push({t:'riddles'}); PAGES.push({t:'tf'}); PAGES.push({t:'journal'});
 var cur = Math.min(st.page, PAGES.length-1);
 /* #p5 en la URL abre directo esa pagina (sirve para mandar el link de una parada) */
 var hm = /^#p(\d+)$/.exec(location.hash); if (hm) cur = Math.min(+hm[1], PAGES.length-1);
+if (!/[?&]teacher\b/i.test(location.search)) cur = Math.min(cur, firstOpen());
 
 var pL = document.getElementById('pL'), pR = document.getElementById('pR');
 var book = document.getElementById('book');
@@ -730,7 +750,7 @@ function render(){
   document.getElementById('next').disabled = cur===PAGES.length-1;
   var label = p.t==='stop' ? 'Stop '+(p.i+1)+' of '+STOPS.length : PAGE_NAME[p.t];
   document.getElementById('where').textContent = label + '  ·  ' + (cur+1) + '/' + PAGES.length;
-  renderShields();
+  renderShields(); updateNav();
   st.page = cur; save();
   try { history.replaceState(null,'','#p'+cur); } catch(e){}
 }
@@ -823,27 +843,49 @@ function renderRoute(){
     '<p class="hand" style="margin-top:12px">First do the three warm-up pages: <b>Natural events</b>, <b>Landscapes</b> and the <b>Language detective</b>.</p>';
 }
 
+/* =========================================================
+   UN SOLO "CHECK ANSWERS" POR PAGINA
+   El alumno elige / escribe todo y recien al apretar el boton
+   se corrige la pagina entera. Lo correcto queda fijo; lo que
+   esta mal se marca en rojo y vuelve a quedar libre.
+   ========================================================= */
+function checkBar(done, msgDone){
+  return '<div class="checkbar">'+
+    (done ? '<div class="fb yes big">'+msgDone+'</div>'
+          : '<button class="btn bigcheck" data-checkall="1">&#10004; Check answers</button>'+
+            '<div class="fb '+(live.allok?'yes':'no')+'" id="fbAll">'+(live.allMsg||'')+'</div>')+
+    '</div>';
+}
+function setAll(msg, ok){ live.allMsg = msg; live.allok = !!ok; }
+
 /* ---------- 2.3 Activity 1: unir palabras y fotos ---------- */
 var matchOrder = null, wordOrder = null;
 function renderMatch(){
   if (!matchOrder){ matchOrder = shuffle(MATCH.slice()); wordOrder = shuffle(MATCH.map(function(m){return m.w;})); }
+  live.mpair = live.mpair || {};
+  var used = {}; Object.keys(live.mpair).forEach(function(k){ used[live.mpair[k]] = 1; });
   var g = '';
   matchOrder.forEach(function(m,i){
-    var done = st.match[m.w];
-    g += '<button class="ph'+(done?' good':'')+'" data-mimg="'+esc(m.w)+'" style="--r:'+rot(i)+'"><span class="let">'+'abcdefgh'[i]+'</span>'+
-      '<img src="'+M+m.img+'" alt="Photo '+'abcdefgh'[i]+'" loading="lazy">'+(done?'<span class="stick">'+esc(m.w)+'</span>':'')+'</button>';
+    var done = st.match[m.w], put = live.mpair[m.w];
+    var bad = live.mbad && live.mbad[m.w];
+    g += '<button class="ph'+(done?' good':'')+(bad?' bad':'')+(live.pick&&!done?' target':'')+'" data-mimg="'+esc(m.w)+'" style="--r:'+rot(i)+'"><span class="let">'+'abcdefgh'[i]+'</span>'+
+      '<img src="'+M+m.img+'" alt="Photo '+'abcdefgh'[i]+'" loading="lazy">'+
+      (done ? '<span class="stick">'+esc(m.w)+'</span>' : put ? '<span class="stick try">'+esc(put)+'</span>' : '')+'</button>';
   });
   pL.innerHTML = '<span class="label">Warm-up 1</span><h2 class="stopname sticker">Natural events</h2><div class="grid">'+g+'</div>';
   var w = '';
-  wordOrder.forEach(function(x){ w += '<button class="chip'+(st.match[x]?' used':'')+'" data-mword="'+esc(x)+'">'+esc(x)+'</button>'; });
-  var n = Object.keys(st.match).length;
+  wordOrder.forEach(function(x){
+    var off = st.match[x] || used[x];
+    w += '<button class="chip'+(off?' used':'')+(live.pick===x?' pick':'')+'" data-mword="'+esc(x)+'"'+(off?' disabled':'')+'>'+esc(x)+'</button>';
+  });
+  var done = Object.keys(st.match).length===MATCH.length;
   pR.innerHTML =
-    '<div class="task"><h3><span class="n">1</span>Vocabulary</h3>'+
-    '<p style="margin-top:0">Which natural events have you seen? Where? <b>Match the words to the photos.</b><br><span class="hand">Tap a word, then tap its photo.</span></p>'+
-    '<div class="wordbox">'+w+'</div>'+
-    '<div class="fb'+(n===MATCH.length?' yes':'')+'" id="mfb">'+(n===MATCH.length?'Brilliant! All the photos have their names. Now open the next page!':n+' / '+MATCH.length+' matched')+'</div></div>'+
+    '<div class="task"><h3><span class="n">1</span>Vocabulary'+okTag(done)+'</h3>'+
+    '<p style="margin-top:0">Which natural events have you seen? Where? <b>Match the words to the photos.</b><br><span class="hand">Tap a word, then tap its photo. Tap a photo again to take the word off.</span></p>'+
+    '<div class="wordbox">'+w+'</div></div>'+
     '<div class="story"><b class="who">Talk with a friend:</b>Which of these nature wonders would you like to visit? Why? <span class="hand">“I would like to see the ... because ...”</span></div>'+
-    (n?'<button class="btn ghost" data-reset="match">Start again</button>':'');
+    checkBar(done, 'Brilliant! All the photos have their names. Press Next!');
+  live.mbad = null;
 }
 
 /* ---------- 2.1 Activity 2: adjetivos para describir paisajes ---------- */
@@ -871,14 +913,13 @@ function renderTable(){
     body += '<td><div class="tcell'+(st.tableOk?' locked':'')+'" data-tcol="'+c.k+'">'+cell+(st.tableOk?'':'<span class="plus">+</span>')+'</div></td>';
   });
   pR.innerHTML =
-    '<div class="task"><h3><span class="n">2</span>Vocabulary'+(st.tableOk?'<span class="ok">Done!</span>':'')+'</h3>'+
-    '<p style="margin-top:0"><b>Choose the adjectives to describe these landscapes.</b> Put at least <b>three</b> in every column.<br><span class="hand">Tap an adjective, then tap a column. You can use a word more than once!</span></p>'+
+    '<div class="task"><h3><span class="n">2</span>Vocabulary'+okTag(st.tableOk)+'</h3>'+
+    '<p style="margin-top:0"><b>Choose the adjectives to describe these landscapes.</b> Put at least <b>three</b> in every column.<br><span class="hand">Tap an adjective, then tap a column. You can use a word more than once! Tap a word in the table to take it off.</span></p>'+
     '<div class="wordbox">'+box+'</div>'+
     '<div class="tablewrap"><table class="adjtable"><thead><tr>'+head+'</tr></thead><tbody><tr>'+body+'</tr></tbody></table></div>'+
-    (st.tableOk ? '<div class="fb yes">Excellent! Great describing words.</div>' :
-      '<div class="row"><button class="btn" data-tcheck="1">Check</button><button class="btn ghost" data-treset="1">Clear</button><span class="fb'+(live.tfb&&live.tfb.ok?' yes':' no')+'" id="tfb">'+(live.tfb?live.tfb.t:'')+'</span></div>')+
     '</div>'+
-    '<div class="story"><b class="who">Talk with a friend:</b>Which landscapes can you find in your country? <span class="hand">“In Argentina there are high mountains and huge waterfalls!”</span></div>';
+    '<div class="story"><b class="who">Talk with a friend:</b>Which landscapes can you find in your country? <span class="hand">“In Argentina there are high mountains and huge waterfalls!”</span></div>'+
+    checkBar(st.tableOk, 'Excellent! Great describing words. Press Next!');
 }
 
 /* ---------- Language detective: comparativos ---------- */
@@ -901,21 +942,24 @@ function renderDetective(){
     '</div></div>'+
     '<svg class="lupa" viewBox="0 0 120 120" aria-hidden="true"><circle cx="48" cy="48" r="34" fill="#BFE8FF" fill-opacity=".7" stroke="#141414" stroke-width="8"/><path d="M74 74 L110 110" stroke="#141414" stroke-width="16" stroke-linecap="round"/><path d="M74 74 L110 110" stroke="#B3121B" stroke-width="8" stroke-linecap="round"/><path d="M30 36 Q38 24 52 22" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/></svg>';
   if (!sortOrder) sortOrder = shuffle(SORT.slice());
+  live.sput = live.sput || {};
   var chips = '';
-  sortOrder.forEach(function(x){ if (!st.sort[x.w]) chips += '<button class="chip'+(live.sw===x.w?' pick':'')+'" data-sw="'+x.w+'">'+x.w+'</button>'; });
+  sortOrder.forEach(function(x){ if (!st.sort[x.w] && !live.sput[x.w]) chips += '<button class="chip'+(live.sw===x.w?' pick':'')+'" data-sw="'+x.w+'">'+x.w+'</button>'; });
   var bk = '';
   BASKETS.forEach(function(b){
-    var inside = SORT.filter(function(x){ return st.sort[x.w] && x.r===b.r; }).map(function(x){ return '<span class="tword">'+x.w+'</span>'; }).join('');
-    bk += '<button class="basket'+(live.badB===b.r?' bad':'')+'" data-bk="'+b.r+'"><b>'+b.t+'</b><small>'+b.ex+'</small><div class="in">'+inside+'</div></button>';
+    var inside = SORT.filter(function(x){ return (st.sort[x.w] && x.r===b.r) || live.sput[x.w]===b.r; }).map(function(x){
+      return st.sort[x.w] ? '<span class="tword okw">'+x.w+'</span>' : '<span class="tword" data-sback="'+x.w+'">'+x.w+'</span>';
+    }).join('');
+    bk += '<button class="basket'+(live.sbadB && live.sbadB[b.r]?' bad':'')+'" data-bk="'+b.r+'"><b>'+b.t+'</b><small>'+b.ex+'</small><div class="in">'+inside+'</div></button>';
   });
-  var n = Object.keys(st.sort).length;
+  var done = Object.keys(st.sort).length===SORT.length;
   pR.innerHTML =
-    '<div class="task"><h3><span class="n">3</span>Be a language detective!'+(n===SORT.length?'<span class="ok">Done!</span>':'')+'</h3>'+
-    '<p style="margin-top:0">How do these adjectives make the comparative? <b>Put each word in the right basket.</b><br><span class="hand">Tap a word, then tap a basket.</span></p>'+
+    '<div class="task"><h3><span class="n">3</span>Be a language detective!'+okTag(done)+'</h3>'+
+    '<p style="margin-top:0">How do these adjectives make the comparative? <b>Put each word in the right basket.</b><br><span class="hand">Tap a word, then tap a basket. Tap a word in a basket to take it out.</span></p>'+
     (chips ? '<div class="wordbox">'+chips+'</div>' : '')+
-    '<div class="baskets">'+bk+'</div>'+
-    '<div class="fb'+(n===SORT.length?' yes':(live.sfb?' no':''))+'" id="sfb">'+(n===SORT.length?'Case closed, detective! Now you are ready for the trip.':(live.sfb||n+' / '+SORT.length+' sorted'))+'</div>'+
-    '</div>'+(n?'<button class="btn ghost" data-reset="sort">Start again</button>':'');
+    '<div class="baskets">'+bk+'</div></div>'+
+    checkBar(done, 'Case closed, detective! Now you are ready for the trip. Press Next!');
+  live.sbadB = null;
 }
 
 /* ---------- parada ---------- */
@@ -946,7 +990,7 @@ function renderStop(s){
   live.box = shuffle(answers.concat(s.extras));
   /* tarea B: comparativos, opciones barajadas una vez por render */
   live.opts = s.cmp.map(function(q){ return shuffle([q.a].concat(q.bad)); });
-  live.cbad = {};
+  live.csel = {}; live.cbad = {};
   /* tarea C: armar la oracion */
   var target = s.build.split(' ');
   var tiles = target.map(function(t,i){ return {w:t, k:i}; });
@@ -956,10 +1000,14 @@ function renderStop(s){
 
   pR.innerHTML =
     '<div class="story"><b class="who">Dan says:</b>'+esc(s.story)+'</div>'+
-    '<div class="task" id="tA"></div><div class="task" id="tB"></div><div class="task" id="tC"></div><div class="task" id="tD"></div>';
-  drawA(); drawB(); drawC(); drawD();
+    '<div class="task" id="tA"></div><div class="task" id="tB"></div><div class="task" id="tC"></div><div class="task" id="tD"></div>'+
+    '<div id="tCheck"></div>';
+  drawStop();
 }
+function drawStop(){ drawA(); drawB(); drawC(); drawD(); drawCheck(); }
+function drawCheck(){ document.getElementById('tCheck').innerHTML = checkBar(stopDone(live.stop), 'Well done! You won a Viking shield! Press Next!'); }
 function okTag(b){ return b ? '<span class="ok">Done!</span>' : ''; }
+function taskMsg(k){ var m = live.tmsg && live.tmsg[k]; return m ? '<div class="fb no">'+esc(m)+'</div>' : ''; }
 function drawA(){
   var s = live.stop, x = S(s.id), k = 0;
   var used = {}; live.fill.forEach(function(w){ if (w) used[w] = (used[w]||0)+1; });
@@ -983,9 +1031,7 @@ function drawA(){
   });
   document.getElementById('tA').innerHTML =
     '<h3><span class="n">A</span>Write the correct word in the spaces'+okTag(x.a)+'</h3>'+
-    '<div class="wordbox">'+box+'</div>'+sents+
-    (x.a ? '<div class="fb yes">Great job! Both sentences are correct.</div>' :
-      '<div class="row"><button class="btn" data-check="A">Check</button><span class="fb" id="fbA">'+(live.fbA||'')+'</span></div>');
+    '<div class="wordbox">'+box+'</div>'+sents+taskMsg('A');
   live.marks = null;
 }
 function drawB(){
@@ -995,17 +1041,18 @@ function drawB(){
     var parts = q.s.split('___');
     var opts = '';
     if (!done) live.opts[i].forEach(function(o){
-      opts += '<button class="opt'+(live.cbad[i]===o?' bad':'')+'" data-cmp="'+i+'" data-o="'+esc(o)+'">'+esc(o)+'</button>';
+      opts += '<button class="opt'+(live.csel[i]===o?' on':'')+(live.cbad[i]===o?' bad':'')+'" data-cmp="'+i+'" data-o="'+esc(o)+'">'+esc(o)+'</button>';
     });
+    var shown = done ? q.a : live.csel[i];
     h += '<div class="cmp"><div class="sent"><span class="let">'+'ab'[i]+'</span>'+esc(parts[0])+
-      '<span class="gap'+(done?' good':'')+'">'+(done?esc(q.a):'&nbsp;')+'</span> <span class="adj">('+esc(q.adj)+')</span>'+esc(parts[1])+'</div>'+
+      '<span class="gap'+(done?' good':shown?' full':'')+'">'+(shown?esc(shown):'&nbsp;')+'</span> <span class="adj">('+esc(q.adj)+')</span>'+esc(parts[1])+'</div>'+
       (done ? '' : '<div class="opts">'+opts+'</div>')+
       (live.cbad[i] && !done ? '<div class="hint">🔍 '+esc(RULES[q.rule])+'</div>' : '')+
       '</div>';
   });
   document.getElementById('tB').innerHTML =
     '<h3><span class="n">B</span>Language detective: comparatives'+okTag(cmpDone(s))+'</h3>'+
-    '<p style="margin:0 0 4px">Choose the correct comparative.</p>'+h;
+    '<p style="margin:0 0 4px">Choose the correct comparative.</p>'+h+taskMsg('B');
 }
 function drawC(){
   var s = live.stop, x = S(s.id);
@@ -1017,8 +1064,7 @@ function drawC(){
     '<h3><span class="n">C</span>Build the sentence'+okTag(x.b)+'</h3>'+
     (x.b ? '' : '<div class="tray">'+tray+'</div>')+
     '<div class="answer'+(x.b?' good':'')+(live.badB?' bad':'')+'">'+ans+'</div>'+
-    (x.b ? '<div class="fb yes">Perfect sentence!</div>' :
-      '<div class="row"><button class="btn" data-check="C">Check</button><button class="btn ghost" data-clear="C">Clear</button><span class="fb" id="fbC">'+(live.fbC||'')+'</span></div>');
+    (x.b ? '' : '<div class="row"><button class="btn ghost" data-clear="C">Clear</button></div>')+taskMsg('C');
   live.badB = false;
 }
 function drawD(){
@@ -1029,10 +1075,58 @@ function drawD(){
   s.words.forEach(function(w){ st2 += '<button class="starter w" data-ins="'+esc(w)+'">'+esc(w)+'</button>'; });
   document.getElementById('tD').innerHTML =
     '<h3><span class="n">D</span>Your turn! Compare two things'+okTag(!!x.w)+'</h3>'+
-    '<p style="margin:0 0 6px">Look at the photos and videos. Write <b>your own</b> sentence with a comparative. <span class="hand">The ... is ...er than ...</span></p>'+
+    '<p style="margin:0 0 6px">Look at the photos and videos. Write <b>your own</b> sentence with a comparative and <b>than</b>. <span class="hand">The ... is ...er than ...</span></p>'+
     '<div class="starters">'+st1+'</div><div class="starters">'+st2+'</div>'+
     '<textarea id="wr" placeholder="The waterfall is higher than ..." maxlength="240">'+esc(live.draft!=null?live.draft:x.w)+'</textarea>'+
-    '<div class="row"><button class="btn" data-stick="1">&#9986; Stick it in my journal</button><span class="fb" id="fbD"></span></div>';
+    (x.w ? '<div class="fb yes">In your journal: “'+esc(x.w)+'”</div>' : '')+taskMsg('D');
+}
+/* la oracion propia: al menos 4 palabras y un comparativo con than */
+function sentenceProblem(txt){
+  if (wordCount(txt) < 4) return 'Write a sentence with at least 4 words.';
+  if (!/\bthan\b/i.test(txt)) return 'Use a comparative with "than": ...er than / more ... than.';
+  return '';
+}
+function checkStop(){
+  var s = live.stop, x = S(s.id), probs = 0;
+  live.tmsg = {};
+  /* A */
+  if (!x.a){
+    if (live.fill.indexOf('')>=0){ live.tmsg.A = 'Fill all the spaces.'; probs++; }
+    else {
+      var marks = live.fill.map(function(w,i){ return w===live.answers[i]; });
+      if (marks.every(Boolean)) x.a = true;
+      else {
+        marks.forEach(function(ok,i){ if (!ok) miss('a|'+s.id+'|'+i, stopLabel(s), 'A', live.fill[i], live.answers[i]); });
+        live.marks = marks; live.tmsg.A = 'Look at the red space and try again.'; probs++;
+        live.fill = live.fill.map(function(w,i){ return marks[i] ? w : ''; });
+        live.sel = live.fill.indexOf('');
+      }
+    }
+  }
+  /* B */
+  live.cbad = {};
+  s.cmp.forEach(function(q,i){
+    if (x.c[i]) return;
+    var o = live.csel[i];
+    if (!o){ live.tmsg.B = 'Choose a comparative for every sentence.'; probs++; return; }
+    if (o===q.a) x.c[i] = true;
+    else { miss('c|'+s.id+'|'+i, stopLabel(s), 'B', o, q.a); live.cbad[i] = o; delete live.csel[i]; live.tmsg.B = 'Not yet! Read the clue and choose again.'; probs++; }
+  });
+  /* C */
+  if (!x.b){
+    if (live.built.length < live.tiles.length){ live.tmsg.C = 'Use all the words.'; probs++; }
+    else if (live.built.map(function(q){return q.w;}).join(' ')===s.build) x.b = true;
+    else { miss('b|'+s.id, stopLabel(s), 'C', live.built.map(function(q){return q.w;}).join(' '), s.build); live.badB = true; live.tmsg.C = 'Almost! Check the order of the words.'; probs++; }
+  }
+  /* D */
+  var txt = (document.getElementById('wr') || {}).value || '';
+  if (txt.trim() && txt.trim() !== x.w){
+    var pr = sentenceProblem(txt);
+    if (pr){ live.tmsg.D = pr; probs++; } else { x.w = cleanSentence(txt); live.draft = null; }
+  } else if (!x.w){ live.tmsg.D = 'Write your own sentence.'; probs++; }
+  save();
+  setAll(stopDone(s) ? '' : 'Look at the red messages, fix them and press Check answers again.', false);
+  drawStop(); renderShields(); updateNav();
 }
 
 /* ---------- 2.3 Activity 3: adivinanzas ---------- */
@@ -1042,6 +1136,7 @@ function renderRiddles(){
     var others = shuffle(RIDDLES.filter(function(o,j){ return j!==i; })).slice(0,2).map(function(o){ return o.img; });
     return shuffle([r.img].concat(others));
   });
+  live.rsel = live.rsel || {};
   var half = Math.ceil(RIDDLES.length/2);
   function block(from,to){
     var h = '';
@@ -1049,42 +1144,48 @@ function renderRiddles(){
       var r = RIDDLES[i], ans = st.riddles[i];
       var o = '';
       riddleOpts[i].forEach(function(img,j){
-        var cls = 'ph' + (ans && img===r.img ? ' good' : '');
-        o += '<button class="'+cls+'" data-riddle="'+i+'" data-img="'+img+'" style="--r:'+rot(i+j)+'"><span class="let">'+'abc'[j]+'</span><img src="'+M+img+'" alt="Photo '+'abc'[j]+'" loading="lazy"></button>';
+        var cls = 'ph' + (ans && img===r.img ? ' good' : '') + (!ans && live.rsel[i]===img ? ' chosen' : '') + (live.rbad && live.rbad[i]===img ? ' bad' : '');
+        o += '<button class="'+cls+'" data-riddle="'+i+'" data-img="'+img+'" style="--r:'+rot(i+j)+'"'+(ans?' disabled':'')+'><span class="let">'+'abc'[j]+'</span><img src="'+M+img+'" alt="Photo '+'abc'[j]+'" loading="lazy"></button>';
       });
       h += '<div class="riddle"><p><b>'+(i+1)+'.</b> '+esc(r.q)+(ans?' <b style="color:#0B7A2E">✔</b>':'')+'</p><div class="ropts">'+o+'</div></div>';
     }
     return h;
   }
-  var n = Object.keys(st.riddles).length;
+  var done = Object.keys(st.riddles).length===RIDDLES.length;
   pL.innerHTML = '<span class="label">Quiz time</span><h2 class="stopname sticker">Guess the photo</h2>'+
-    '<p style="margin-top:0;color:#fff;font-weight:bold;text-shadow:2px 2px 0 #141414">Read what Dan says. Which photo is he describing?</p>'+block(0,half);
-  pR.innerHTML = block(half,RIDDLES.length)+'<div class="fb'+(n===RIDDLES.length?' yes':'')+'">'+(n===RIDDLES.length?'Wow! You guessed them all. You are a real Viking explorer!':n+' / '+RIDDLES.length+' guessed')+'</div>';
+    '<p style="margin-top:0;color:#fff;font-weight:bold;text-shadow:2px 2px 0 #141414">Read what Dan says. Which photo is he describing? Choose one photo for each sentence.</p>'+block(0,half);
+  pR.innerHTML = block(half,RIDDLES.length)+checkBar(done, 'Wow! You guessed them all. You are a real Viking explorer! Press Next!');
+  live.rbad = null;
 }
 
 /* ---------- 2.1 Activity 6: true / false ---------- */
 function renderTF(){
+  live.tsel = live.tsel || {};
   function block(from,to){
     var h = '';
     for (var i=from;i<to;i++){
-      var q = TF[i], ans = st.tf[i];
-      h += '<div class="tf'+(ans?' done':'')+'"><p><b>'+(i+1)+'.</b> '+esc(q.s)+'</p>'+
+      var q = TF[i], ans = st.tf[i], sel = live.tsel[i];
+      var badT = live.tbadx && live.tbadx[i];
+      h += '<div class="tf'+(ans?' done':'')+(badT?' wrongtf':'')+'"><p><b>'+(i+1)+'.</b> '+esc(q.s)+'</p>'+
         (ans ? '<div class="tfa"><span class="tag '+(q.a?'t':'f')+'">'+(q.a?'TRUE':'FALSE')+'</span> '+esc(q.why)+'</div>' :
-          '<div class="row" style="margin-top:4px"><button class="tbtn t'+(live.tfbad===i+'t'?' bad':'')+'" data-tf="'+i+'" data-v="1">True</button><button class="tbtn f'+(live.tfbad===i+'f'?' bad':'')+'" data-tf="'+i+'" data-v="0">False</button></div>')+
+          '<div class="row" style="margin-top:4px"><button class="tbtn t'+(sel==='1'?' on':'')+'" data-tf="'+i+'" data-v="1">True</button><button class="tbtn f'+(sel==='0'?' on':'')+'" data-tf="'+i+'" data-v="0">False</button>'+
+          (badT ? '<span class="fb no">Not this one. Try again!</span>' : '')+'</div>')+
         '</div>';
     }
     return h;
   }
-  var n = Object.keys(st.tf).length;
+  var done = Object.keys(st.tf).length===TF.length && !!st.tfw;
   pL.innerHTML = '<span class="label">Iceland quiz</span><h2 class="stopname sticker">True or false?</h2>'+
     '<p style="margin-top:0;color:#fff;font-weight:bold;text-shadow:2px 2px 0 #141414">Read Dan’s quiz. Is it true or false?</p>'+block(0,4);
   pR.innerHTML = block(4,TF.length)+
-    '<div class="fb'+(n===TF.length?' yes':'')+'">'+(n===TF.length?'Quiz complete! You know Iceland very well.':n+' / '+TF.length+' answered')+'</div>'+
     '<div class="task" style="margin-top:14px"><h3><span class="n">★</span>Write a true / false sentence'+okTag(!!st.tfw)+'</h3>'+
-    '<p style="margin:0 0 6px">Write a sentence about Iceland or Argentina with a comparative. Ask a friend: true or false?</p>'+
+    '<p style="margin:0 0 6px">Write a sentence about Iceland or Argentina with a comparative and <b>than</b>. Ask a friend: true or false?</p>'+
     '<div class="starters"><button class="starter" data-ins="Argentina is">Argentina is ...</button><button class="starter" data-ins="Iceland is">Iceland is ...</button><button class="starter w" data-ins="hotter than">hotter than</button><button class="starter w" data-ins="bigger than">bigger than</button><button class="starter w" data-ins="more beautiful than">more beautiful than</button></div>'+
     '<textarea id="wr" placeholder="Argentina is hotter than Iceland." maxlength="240">'+esc(live.draft!=null?live.draft:st.tfw)+'</textarea>'+
-    '<div class="row"><button class="btn" data-sticktf="1">&#9986; Stick it in my journal</button><span class="fb" id="fbD"></span></div></div>';
+    (st.tfw ? '<div class="fb yes">In your journal: “'+esc(st.tfw)+'”</div>' : '')+
+    (live.tfwMsg ? '<div class="fb no">'+esc(live.tfwMsg)+'</div>' : '')+'</div>'+
+    checkBar(done, 'Quiz complete! You know Iceland very well. Press Next!');
+  live.tbadx = null;
 }
 
 /* ---------- diario ---------- */
@@ -1113,11 +1214,43 @@ function renderJournal(){
   drawPapoiIn(document.getElementById('papoiCard'), !allDone());
 }
 
+/* ---------- que paginas estan terminadas ----------
+   No se puede pasar a la pagina siguiente hasta terminar la actual
+   (ni saltar con los escudos o el mapa por encima de una sin terminar).
+   Con ?teacher en la URL la docente puede recorrer todo libre. */
+var TEACHER = /[?&]teacher\b/i.test(location.search);
+function pageDone(i){
+  var p = PAGES[i];
+  if (p.t==='match') return Object.keys(st.match).length===MATCH.length;
+  if (p.t==='table') return !!st.tableOk;
+  if (p.t==='detective') return Object.keys(st.sort).length===SORT.length;
+  if (p.t==='stop') return stopDone(STOPS[p.i]);
+  if (p.t==='riddles') return Object.keys(st.riddles).length===RIDDLES.length;
+  if (p.t==='tf') return Object.keys(st.tf).length===TF.length && !!st.tfw;
+  return true;
+}
+function firstOpen(){ for (var i=0;i<PAGES.length;i++) if (!pageDone(i)) return i; return PAGES.length-1; }
+function canReach(n){ return TEACHER || n <= firstOpen(); }
+function updateNav(){
+  var nx = document.getElementById('next');
+  var locked = !TEACHER && cur < PAGES.length-1 && !pageDone(cur);
+  nx.classList.toggle('locked', locked);
+  nx.innerHTML = locked ? '&#128274; Next' : 'Next &#9654;';
+}
+function lockedMsg(){
+  var t = document.getElementById('toast');
+  t.textContent = pageDone(cur) ? 'First finish the pages before that one!' : 'Finish this page first! Then press “Check answers”.';
+  t.classList.add('on');
+  clearTimeout(lockedMsg.tm); lockedMsg.tm = setTimeout(function(){ t.classList.remove('on'); }, 2600);
+  var cb = document.querySelector('.bigcheck'); if (cb){ cb.classList.remove('nudge'); void cb.offsetWidth; cb.classList.add('nudge'); }
+}
+
 /* ---------- navegacion con vuelta de pagina ---------- */
 var busy = false;
 function go(n){
   n = Math.max(0, Math.min(PAGES.length-1, n));
   if (n===cur || busy) return;
+  if (n > cur && !canReach(n)){ lockedMsg(); return; }
   var dir = n>cur ? 'next' : 'prev';
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   stopVideos();
@@ -1134,7 +1267,6 @@ function go(n){
 }
 function toBook(){ var r = book.getBoundingClientRect(); if (r.top < 0) window.scrollTo({top: window.scrollY + r.top - 10, behavior:'smooth'}); }
 function stopVideos(){ document.querySelectorAll('video').forEach(function(v){ try{ v.pause(); }catch(e){} }); }
-function setFb(id, kind){ var f = document.getElementById(id); if (f) f.className = 'fb ' + kind; }
 function cleanSentence(txt){
   txt = txt.replace(/\s+/g,' ').trim();
   if (!/[.!?]$/.test(txt)) txt += '.';
@@ -1142,15 +1274,89 @@ function cleanSentence(txt){
 }
 function wordCount(txt){ txt = txt.trim(); return txt ? txt.split(/\s+/).length : 0; }
 
+/* ---------- corregir la pagina abierta ---------- */
+function checkAll(){
+  var t = PAGES[cur].t;
+  if (t==='stop') return checkStop();
+  if (t==='match'){
+    var keys = Object.keys(live.mpair||{});
+    if (!keys.length){ setAll('First put the words on the photos.'); renderMatch(); return; }
+    live.mbad = {};
+    keys.forEach(function(k){
+      if (live.mpair[k]===k) st.match[k] = true;
+      else { miss('m|'+k, 'Natural events', 'photo of '+k, live.mpair[k], k); live.mbad[k] = 1; }
+      delete live.mpair[k];
+    });
+    var left = MATCH.length - Object.keys(st.match).length;
+    setAll(left ? (Object.keys(live.mbad).length ? 'Some words are not right. Try again! ' : '') + left + ' photo(s) left.' : '', false);
+    save(); renderMatch(); updateNav(); return;
+  }
+  if (t==='table'){
+    var tb = tableState(), bad = {}, nbad = 0, few = 0;
+    TABLE.forEach(function(c){
+      if (tb[c.k].length < 3) few++;
+      tb[c.k].forEach(function(a){ if (c.ok.indexOf(a)<0){ bad[c.k+'|'+a] = 1; nbad++; miss('t|'+c.k+'|'+a, 'Landscapes', c.h, a, 'e.g. '+c.ok.slice(0,4).join(', ')); } });
+    });
+    if (nbad){ live.tbad = bad; setAll('Look at the red words. Do they describe that landscape? Take them off and try again.'); }
+    else if (few){ setAll('Good! Now put at least three adjectives in every column.'); }
+    else { st.tableOk = true; setAll(''); }
+    save(); renderTable(); updateNav(); return;
+  }
+  if (t==='detective'){
+    var put = Object.keys(live.sput||{});
+    if (!put.length){ setAll('First put the words in the baskets.'); renderDetective(); return; }
+    live.sbadB = {}; var wrong = 0;
+    put.forEach(function(w){
+      var item = SORT.filter(function(x){ return x.w===w; })[0];
+      if (item.r===live.sput[w]) st.sort[w] = true;
+      else { miss('s|'+w, 'Language detective', w, BASKET_NAME[live.sput[w]], BASKET_NAME[item.r]); live.sbadB[live.sput[w]] = 1; wrong++; }
+      delete live.sput[w];
+    });
+    var left2 = SORT.length - Object.keys(st.sort).length;
+    setAll(left2 ? (wrong ? wrong+' word(s) went back to the box. Look at the end of each word! ' : '') + left2 + ' word(s) left.' : '', false);
+    save(); renderDetective(); updateNav(); return;
+  }
+  if (t==='riddles'){
+    live.rbad = {}; var miss2 = 0, wr = 0;
+    RIDDLES.forEach(function(r,i){
+      if (st.riddles[i]) return;
+      var sel = live.rsel[i];
+      if (!sel){ miss2++; return; }
+      if (sel===r.img) st.riddles[i] = true;
+      else { miss('r|'+i, 'Guess the photo', String(i+1), IMG_NAME[sel], IMG_NAME[r.img]); live.rbad[i] = sel; wr++; }
+      delete live.rsel[i];
+    });
+    setAll(wr ? 'Some photos are not right. Read again and choose another photo!' : miss2 ? 'Choose a photo for every sentence.' : '', false);
+    save(); renderRiddles(); updateNav(); return;
+  }
+  if (t==='tf'){
+    live.tbadx = {}; var empty = 0, bad3 = 0;
+    TF.forEach(function(q,i){
+      if (st.tf[i]) return;
+      var v = live.tsel[i];
+      if (v==null){ empty++; return; }
+      if ((v==='1')===q.a) st.tf[i] = true;
+      else { miss('f|'+i, 'True or false', String(i+1), v==='1'?'True':'False', q.a?'True':'False'); live.tbadx[i] = 1; bad3++; }
+      delete live.tsel[i];
+    });
+    live.tfwMsg = '';
+    var txt = (document.getElementById('wr')||{}).value || '';
+    if (txt.trim() && txt.trim()!==st.tfw){ var pr = sentenceProblem(txt); if (pr) live.tfwMsg = pr; else { st.tfw = cleanSentence(txt); live.draft = null; } }
+    else if (!st.tfw) live.tfwMsg = 'Write your own true / false sentence.';
+    setAll(bad3 ? 'Some answers are not right. Try again!' : empty ? 'Answer every sentence: True or False.' : live.tfwMsg ? 'Now write your sentence.' : '', false);
+    save(); renderTF(); updateNav(); return;
+  }
+}
+
 /* ---------- clicks ---------- */
-var pickedWord = null;
 document.addEventListener('click', function(e){
-  var b = e.target.closest('button, .pin, .tcell'); if (!b) return;
+  var b = e.target.closest('button, .pin, .tcell, [data-sback]'); if (!b) return;
   var d = b.dataset || {}, gattr = b.getAttribute('data-go');
   if (gattr!=null){ go(+gattr); return; }
   if (b.id==='prev'){ go(cur-1); return; }
   if (b.id==='next'){ go(cur+1); return; }
   if (b.id==='home'){ go(0); return; }
+  if (d.checkall){ checkAll(); return; }
 
   /* fotos de la parada */
   if (d.media!=null){
@@ -1165,144 +1371,73 @@ document.addEventListener('click', function(e){
   if (d.gap!=null){
     var i = +d.gap;
     if (live.fill[i]) live.fill[i] = '';
-    live.sel = i; live.fbA = ''; drawA(); return;
+    live.sel = i; drawA(); return;
   }
   if (d.chip!=null){
     var empty = live.fill[live.sel] ? live.fill.indexOf('') : live.sel;
     if (empty<0) return;
     live.fill[empty] = d.chip;
     var nx = live.fill.indexOf(''); live.sel = nx<0 ? empty : nx;
-    live.fbA = ''; drawA(); return;
+    drawA(); return;
   }
-  if (d.check==='A'){
-    if (live.fill.indexOf('')>=0){ live.fbA = 'Fill all the spaces first!'; drawA(); setFb('fbA','no'); return; }
-    var marks = live.fill.map(function(w,i){ return w===live.answers[i]; });
-    if (marks.every(Boolean)){ S(live.stop.id).a = true; save(); drawA(); renderShields(); return; }
-    marks.forEach(function(ok,i){ if (!ok) miss('a|'+live.stop.id+'|'+i, stopLabel(live.stop), 'A', live.fill[i], live.answers[i]); });
-    live.marks = marks; live.fbA = 'Not yet! Look at the red space and try again.';
-    drawA(); setFb('fbA','no');
-    live.fill = live.fill.map(function(w,i){ return marks[i] ? w : ''; });
-    live.sel = live.fill.indexOf('');
-    setTimeout(function(){ if (document.getElementById('tA')) { drawA(); setFb('fbA','no'); } }, 900);
-    return;
-  }
-  /* tarea B: comparativos */
-  if (d.cmp!=null){
-    var ci = +d.cmp, q = live.stop.cmp[ci];
-    if (d.o===q.a){ S(live.stop.id).c[ci] = true; save(); delete live.cbad[ci]; drawB(); renderShields(); return; }
-    miss('c|'+live.stop.id+'|'+ci, stopLabel(live.stop), 'B', d.o, q.a);
-    live.cbad[ci] = d.o; drawB(); return;
-  }
+  /* tarea B: se elige, se corrige con Check answers */
+  if (d.cmp!=null){ live.csel[+d.cmp] = d.o; delete live.cbad[+d.cmp]; drawB(); return; }
   /* tarea C */
   if (d.tile!=null){
     var t = live.tiles.filter(function(q){ return q.k===+d.tile; })[0];
-    live.built.push(t); live.fbC=''; drawC(); return;
+    live.built.push(t); drawC(); return;
   }
-  if (d.untile!=null){ live.built.splice(+d.untile,1); live.fbC=''; drawC(); return; }
-  if (d.clear==='C'){ live.built = []; live.fbC=''; drawC(); return; }
-  if (d.check==='C'){
-    var s2 = live.stop;
-    if (live.built.length < live.tiles.length){ live.fbC = 'Use all the words!'; drawC(); setFb('fbC','no'); return; }
-    if (live.built.map(function(q){return q.w;}).join(' ')===s2.build){ S(s2.id).b = true; save(); drawC(); renderShields(); return; }
-    miss('b|'+s2.id, stopLabel(s2), 'C', live.built.map(function(q){return q.w;}).join(' '), s2.build);
-    live.fbC = 'Almost! Check the order of the words.'; live.badB = true; drawC(); setFb('fbC','no'); return;
-  }
+  if (d.untile!=null){ live.built.splice(+d.untile,1); drawC(); return; }
+  if (d.clear==='C'){ live.built = []; drawC(); return; }
   /* tarea D y oracion true/false */
   if (d.ins!=null){
     var ta = document.getElementById('wr'), v = ta.value, add = d.ins;
     if (v && !/\s$/.test(v)) add = ' '+add;
     ta.value = (v + add + ' ').slice(0,240); ta.focus(); live.draft = ta.value; return;
   }
-  if (d.stick || d.sticktf){
-    var txt = document.getElementById('wr').value, fb = document.getElementById('fbD');
-    if (wordCount(txt) < 4){ fb.textContent = 'Write a longer sentence: at least 4 words!'; fb.className='fb no'; return; }
-    if (!/\bthan\b/i.test(txt)){ fb.textContent = 'Use a comparative with than! Try: ...er than / more ... than.'; fb.className='fb no'; return; }
-    if (d.stick){ S(live.stop.id).w = cleanSentence(txt); live.draft = null; save(); drawD(); renderShields(); }
-    else { st.tfw = cleanSentence(txt); live.draft = null; save(); renderTF(); }
-    var f2 = document.getElementById('fbD'); f2.textContent = 'Stuck in your journal! ✔'; f2.className='fb yes';
-    return;
-  }
   /* 2.3 Activity 1 */
-  if (d.mword!=null){
-    if (st.match[d.mword]) return;
-    pickedWord = d.mword;
-    document.querySelectorAll('[data-mword]').forEach(function(c){ c.classList.toggle('pick', c===b); });
-    document.querySelectorAll('[data-mimg]').forEach(function(p){ if (!st.match[p.dataset.mimg]) p.classList.add('target'); });
-    return;
-  }
+  if (d.mword!=null){ live.pick = d.mword; renderMatch(); return; }
   if (d.mimg!=null){
     if (st.match[d.mimg]) return;
-    var fbm = document.getElementById('mfb');
-    if (!pickedWord){ fbm.textContent = 'First tap a word in the box!'; fbm.className='fb no'; return; }
-    if (pickedWord===d.mimg){ st.match[pickedWord] = true; save(); pickedWord = null; renderMatch(); return; }
-    miss('m|'+d.mimg, 'Natural events', 'photo of '+d.mimg, pickedWord, d.mimg);
-    b.classList.remove('bad'); void b.offsetWidth; b.classList.add('bad');
-    fbm.textContent = 'Oops! That photo is not "'+pickedWord+'". Try another one.'; fbm.className='fb no';
-    return;
+    if (live.pick){ live.mpair[d.mimg] = live.pick; live.pick = null; }
+    else if (live.mpair[d.mimg]) delete live.mpair[d.mimg];
+    renderMatch(); return;
   }
   /* 2.1 Activity 2: tabla */
-  if (d.adj!=null){ live.adj = d.adj; live.tfb = null; renderTable(); return; }
+  if (d.adj!=null){ live.adj = d.adj; renderTable(); return; }
   if (d.tdel!=null){
     e.stopPropagation();
     var pr = d.tdel.split('|'), col = tableState()[pr[0]];
-    col.splice(col.indexOf(pr[1]),1); live.tbad = null; live.tfb = null; save(); renderTable(); return;
+    col.splice(col.indexOf(pr[1]),1); live.tbad = null; save(); renderTable(); return;
   }
   if (d.tcol!=null){
     if (st.tableOk) return;
-    if (!live.adj){ live.tfb = {t:'First tap an adjective in the box!', ok:false}; renderTable(); return; }
+    if (!live.adj){ setAll('First tap an adjective in the box!'); renderTable(); return; }
     var c2 = tableState()[d.tcol];
     if (c2.indexOf(live.adj)<0) c2.push(live.adj);
-    live.tbad = null; live.tfb = null; save(); renderTable(); return;
+    live.tbad = null; save(); renderTable(); return;
   }
-  if (d.tcheck){
-    var tb = tableState(), bad = {}, nbad = 0, few = 0;
-    TABLE.forEach(function(c){
-      if (tb[c.k].length < 3) few++;
-      tb[c.k].forEach(function(a){ if (c.ok.indexOf(a)<0){ bad[c.k+'|'+a] = 1; nbad++; } });
-    });
-    TABLE.forEach(function(c){ tb[c.k].forEach(function(a){ if (bad[c.k+'|'+a]) miss('t|'+c.k+'|'+a, 'Landscapes', c.h, a, 'e.g. '+c.ok.slice(0,4).join(', ')); }); });
-    if (nbad){ live.tbad = bad; live.tfb = {t:'Hmm! Look at the red words. Do they describe that landscape?', ok:false}; }
-    else if (few){ live.tfb = {t:'Good! Now put at least three adjectives in every column.', ok:false}; }
-    else { st.tableOk = true; save(); }
-    renderTable(); return;
-  }
-  if (d.treset){ st.table = null; live.tbad = null; live.tfb = null; save(); renderTable(); return; }
   /* language detective */
-  if (d.sw!=null){ live.sw = d.sw; live.sfb = ''; live.badB = null; renderDetective(); return; }
+  if (d.sback!=null){ delete live.sput[d.sback]; renderDetective(); return; }
+  if (d.sw!=null){ live.sw = d.sw; renderDetective(); return; }
   if (d.bk!=null){
-    if (!live.sw){ live.sfb = 'First tap a word!'; renderDetective(); return; }
-    var item = SORT.filter(function(x){ return x.w===live.sw; })[0];
-    if (item.r===d.bk){ st.sort[item.w] = true; save(); live.sw = null; live.sfb = ''; live.badB = null; }
-    else { miss('s|'+item.w, 'Language detective', item.w, BASKET_NAME[d.bk], BASKET_NAME[item.r]); live.badB = d.bk; live.sfb = 'Not that basket! Look at the end of "'+item.w+'".'; }
-    renderDetective(); return;
+    if (!live.sw){ setAll('First tap a word!'); renderDetective(); return; }
+    live.sput[live.sw] = d.bk; live.sw = null; renderDetective(); return;
   }
   /* 2.3 Activity 3 */
-  if (d.riddle!=null){
-    var ri = +d.riddle;
-    if (st.riddles[ri]) return;
-    if (d.img===RIDDLES[ri].img){ st.riddles[ri] = true; save(); renderRiddles(); return; }
-    miss('r|'+ri, 'Guess the photo', String(ri+1), IMG_NAME[d.img], IMG_NAME[RIDDLES[ri].img]);
-    b.classList.remove('bad'); void b.offsetWidth; b.classList.add('bad'); return;
-  }
+  if (d.riddle!=null){ var ri = +d.riddle; if (st.riddles[ri]) return; live.rsel[ri] = d.img; renderRiddles(); return; }
   /* true / false */
-  if (d.tf!=null){
-    var ti = +d.tf, val = d.v==='1';
-    if (val===TF[ti].a){ st.tf[ti] = true; save(); live.tfbad = null; }
-    else { miss('f|'+ti, 'True or false', String(ti+1), val?'True':'False', TF[ti].a?'True':'False'); live.tfbad = ti+(val?'t':'f'); }
-    renderTF(); return;
-  }
+  if (d.tf!=null){ var dr = (document.getElementById('wr')||{}).value; if (dr!=null) live.draft = dr; live.tsel[+d.tf] = d.v; renderTF(); return; }
   if (d.print){ window.print(); return; }
   if (d.sendjump){ var rc = document.querySelector('.rpcard'); if (rc){ rc.scrollIntoView({behavior:'smooth', block:'start'}); var nm = document.getElementById('rpName'); if (nm) nm.focus({preventScroll:true}); } return; }
   if (d.play){ closeUnlock(); openGame(); return; }
   if (d.closegame){ closeGame(); return; }
   if (d.closeunlock){ closeUnlock(); return; }
   if (d.replay){ celebrate(); return; }
-  if (d.reset==='match'){ st.match = {}; save(); matchOrder = null; pickedWord = null; renderMatch(); return; }
-  if (d.reset==='sort'){ st.sort = {}; save(); sortOrder = null; live.sw = null; renderDetective(); return; }
   if (d.reset==='all'){
     if (!confirm('Start the trip again? Your shields and sentences will be deleted.')) return;
     st = {stops:{}, match:{}, riddles:{}, table:null, tableOk:false, sort:{}, tf:{}, tfw:'', mistakes:{}, papoiSeen:false, hi:st.hi||0, page:0};
-    save(); matchOrder = null; riddleOpts = null; sortOrder = null; go(0); return;
+    save(); matchOrder = null; riddleOpts = null; sortOrder = null; busy = false; cur = -1; go(0); return;
   }
 });
 document.addEventListener('input', function(e){ if (e.target.id==='wr') live.draft = e.target.value; });
