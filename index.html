@@ -278,6 +278,27 @@ button.ph{cursor:pointer; width:100%}
 .tfa .tag{font-family:var(--titulo); color:#fff; border:2px solid var(--negro); border-radius:6px; padding:0 6px; font-size:.8rem}
 .tfa .tag.t{background:var(--verde)} .tfa .tag.f{background:var(--rojo)}
 
+/* ---------- entrega y recompensa ---------- */
+.rpcard{display:none}
+body.journal-open .rpcard{display:block}
+.reward{display:flex; gap:14px; align-items:center; background:var(--crema); border:var(--linea); border-radius:16px;
+  box-shadow:var(--sombra); padding:12px 14px; margin-top:22px; transform:rotate(-1deg)}
+.reward.on{background:#FFF6CC}
+.reward canvas{width:76px; height:100px; image-rendering:pixelated; flex:none}
+.reward h3{font-size:1.2rem; text-transform:uppercase; margin:6px 0 4px}
+.reward p{margin:0 0 8px}
+.reward .prog{display:flex; flex-wrap:wrap; gap:6px}
+.reward .prog span{border:2px solid var(--negro); border-radius:8px; padding:1px 8px; background:#fff; font-family:var(--titulo); font-size:.75rem}
+.reward .prog span.okp{background:var(--lima)}
+.ov{position:fixed; inset:0; z-index:50; background:rgba(20,20,20,.72); display:flex; align-items:center; justify-content:center; padding:16px}
+.ov[hidden]{display:none}
+.ovbox{background:var(--crema); border:6px solid var(--negro); border-radius:20px; box-shadow:10px 10px 0 var(--negro); padding:16px; width:100%; max-width:780px}
+.ovbox.unlock{max-width:420px; text-align:center}
+.ovbox.unlock canvas{width:114px; height:150px; image-rendering:pixelated; display:block; margin:10px auto; animation:bob 1s steps(2) infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+#game{width:100%; height:auto; display:block; border:4px solid var(--negro); border-radius:10px; image-rendering:pixelated; touch-action:manipulation; cursor:pointer; background:#0B1636}
+.ovcopy{font-family:var(--titulo); font-size:.75rem; text-align:center; margin:8px 0 0}
+
 footer{text-align:center; padding:14px 10px 22px; font-family:var(--titulo); font-size:.85rem; letter-spacing:.5px}
 footer span{background:var(--crema); border:3px solid var(--negro); border-radius:10px; padding:4px 12px; display:inline-block}
 
@@ -337,6 +358,30 @@ footer span{background:var(--crema); border:3px solid var(--negro); border-radiu
 </div>
 
 <footer><span>Copyright Prof Dan M. Mecikovsky</span></footer>
+
+<!-- resumen de todo el libro para el modulo de entrega (no se ve) -->
+<section id="rpdata" hidden></section>
+
+<!-- aviso de recompensa -->
+<div class="ov" id="unlockOv" hidden>
+  <div class="ovbox unlock">
+    <span class="label" style="background:var(--lima)">Reward unlocked!</span>
+    <h2 class="sticker">Viking Papoi</h2>
+    <canvas id="papoiBig" width="114" height="150" aria-label="Viking Papoi"></canvas>
+    <p>You finished ALL the exercises! Meet your new friend: <b>Viking Papoi</b>, the bravest banana in Iceland.</p>
+    <div class="row" style="justify-content:center"><button class="btn" data-play="1" style="--c:var(--rojo)">&#9654; Play Papoi Run</button><button class="btn ghost" data-closeunlock="1">Later</button></div>
+  </div>
+</div>
+
+<!-- el juego -->
+<div class="ov" id="gameOv" hidden>
+  <div class="ovbox">
+    <div class="row" style="justify-content:space-between;margin:0 0 8px"><h2 class="sticker" style="font-size:1.6rem">Papoi Run</h2><button class="btn ghost" data-closegame="1">&#10005; Close</button></div>
+    <canvas id="game" width="720" height="240" aria-label="Papoi Run game"></canvas>
+    <p class="hand" style="margin:8px 0 0">Jump with <b>SPACE</b>, <b>&uarr;</b> or a <b>tap</b>. Jump over the lava rocks and the ice. Careful with the puffins!</p>
+    <p class="ovcopy">Copyright Prof Dan M. Mecikovsky</p>
+  </div>
+</div>
 
 <script>
 /* =========================================================
@@ -604,10 +649,21 @@ function load(){
   d = d || {};
   d.stops = d.stops || {}; d.match = d.match || {}; d.riddles = d.riddles || {};
   d.table = d.table || null; d.tableOk = !!d.tableOk; d.sort = d.sort || {}; d.tf = d.tf || {}; d.tfw = d.tfw || '';
+  d.mistakes = d.mistakes || {}; d.papoiSeen = !!d.papoiSeen; d.hi = d.hi || 0;
   d.page = d.page || 0;
   return d;
 }
-function save(){ try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} updateReport(); checkPapoi(); }
+/* Guarda el PRIMER error de cada item, aunque despues lo corrija: es lo que
+   le sirve a la docente para saber donde se trabo el curso. */
+function miss(key, where, n, wrote, right){
+  if (st.mistakes[key]) return;
+  st.mistakes[key] = {where:where, n:n, wrote:String(wrote), right:String(right)};
+  save();
+}
+function stopLabel(s){ return 'Stop '+(STOPS.indexOf(s)+1)+' '+s.name; }
+var IMG_NAME = {'v0328.jpg':'geyser','p1721.jpg':'northern lights','p6938.jpg':'double rainbow','p1004.jpg':'iceberg','p1174.jpg':'Viking ship','p0443.jpg':'sunset'};
+var BASKET_NAME = {er:'+ er', r:'-e + r', ier:'y -> ier', double:'double + er', more:'more + ...'};
 function S(id){ var x = st.stops[id] || (st.stops[id] = {a:false,c:{},b:false,w:''}); x.c = x.c || {}; return x; }
 
 function shuffle(a){ for (var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
@@ -643,6 +699,7 @@ function render(){
   pL.insertAdjacentHTML('beforeend','<span class="pnum">'+(cur*2+1)+'</span>');
   pR.insertAdjacentHTML('beforeend','<span class="pnum">'+(cur*2+2)+'</span>');
   pL.classList.toggle('cover-left', p.t==='cover');
+  document.body.classList.toggle('journal-open', p.t==='journal');
   document.getElementById('prev').disabled = cur===0;
   document.getElementById('next').disabled = cur===PAGES.length-1;
   var label = p.t==='stop' ? 'Stop '+(p.i+1)+' of '+STOPS.length : PAGE_NAME[p.t];
@@ -1025,7 +1082,9 @@ function renderJournal(){
     '<div class="score"><div>Shields: '+shields+'/'+STOPS.length+'</div><div>Detective: '+Object.keys(st.sort).length+'/'+SORT.length+'</div><div>Photos: '+Object.keys(st.riddles).length+'/'+RIDDLES.length+'</div><div>True/false: '+Object.keys(st.tf).length+'/'+TF.length+'</div></div>'+
     '<h3 style="text-transform:uppercase;margin-bottom:10px">My sentences about Iceland</h3>'+
     (any ? ent : '<p class="hand">Your journal is empty. Go to a stop and write your own sentence in task D!</p>')+
-    '<div class="row no-print"><button class="btn" data-print="1">Print my journal</button><button class="btn ghost" data-reset="all">Start the trip again</button></div>';
+    '<div class="row no-print"><button class="btn" data-sendjump="1">&#9993; Send my results</button><button class="btn ghost" data-print="1">Print my journal</button><button class="btn ghost" data-reset="all">Start the trip again</button></div>';
+  pL.insertAdjacentHTML('beforeend', rewardHTML());
+  drawPapoiIn(document.getElementById('papoiCard'), !allDone());
 }
 
 /* ---------- navegacion con vuelta de pagina ---------- */
@@ -1092,6 +1151,7 @@ document.addEventListener('click', function(e){
     if (live.fill.indexOf('')>=0){ live.fbA = 'Fill all the spaces first!'; drawA(); setFb('fbA','no'); return; }
     var marks = live.fill.map(function(w,i){ return w===live.answers[i]; });
     if (marks.every(Boolean)){ S(live.stop.id).a = true; save(); drawA(); renderShields(); return; }
+    marks.forEach(function(ok,i){ if (!ok) miss('a|'+live.stop.id+'|'+i, stopLabel(live.stop), 'A', live.fill[i], live.answers[i]); });
     live.marks = marks; live.fbA = 'Not yet! Look at the red space and try again.';
     drawA(); setFb('fbA','no');
     live.fill = live.fill.map(function(w,i){ return marks[i] ? w : ''; });
@@ -1103,6 +1163,7 @@ document.addEventListener('click', function(e){
   if (d.cmp!=null){
     var ci = +d.cmp, q = live.stop.cmp[ci];
     if (d.o===q.a){ S(live.stop.id).c[ci] = true; save(); delete live.cbad[ci]; drawB(); renderShields(); return; }
+    miss('c|'+live.stop.id+'|'+ci, stopLabel(live.stop), 'B', d.o, q.a);
     live.cbad[ci] = d.o; drawB(); return;
   }
   /* tarea C */
@@ -1116,6 +1177,7 @@ document.addEventListener('click', function(e){
     var s2 = live.stop;
     if (live.built.length < live.tiles.length){ live.fbC = 'Use all the words!'; drawC(); setFb('fbC','no'); return; }
     if (live.built.map(function(q){return q.w;}).join(' ')===s2.build){ S(s2.id).b = true; save(); drawC(); renderShields(); return; }
+    miss('b|'+s2.id, stopLabel(s2), 'C', live.built.map(function(q){return q.w;}).join(' '), s2.build);
     live.fbC = 'Almost! Check the order of the words.'; live.badB = true; drawC(); setFb('fbC','no'); return;
   }
   /* tarea D y oracion true/false */
@@ -1146,6 +1208,7 @@ document.addEventListener('click', function(e){
     var fbm = document.getElementById('mfb');
     if (!pickedWord){ fbm.textContent = 'First tap a word in the box!'; fbm.className='fb no'; return; }
     if (pickedWord===d.mimg){ st.match[pickedWord] = true; save(); pickedWord = null; renderMatch(); return; }
+    miss('m|'+d.mimg, 'Natural events', 'photo of '+d.mimg, pickedWord, d.mimg);
     b.classList.remove('bad'); void b.offsetWidth; b.classList.add('bad');
     fbm.textContent = 'Oops! That photo is not "'+pickedWord+'". Try another one.'; fbm.className='fb no';
     return;
@@ -1170,6 +1233,7 @@ document.addEventListener('click', function(e){
       if (tb[c.k].length < 3) few++;
       tb[c.k].forEach(function(a){ if (c.ok.indexOf(a)<0){ bad[c.k+'|'+a] = 1; nbad++; } });
     });
+    TABLE.forEach(function(c){ tb[c.k].forEach(function(a){ if (bad[c.k+'|'+a]) miss('t|'+c.k+'|'+a, 'Landscapes', c.h, a, 'e.g. '+c.ok.slice(0,4).join(', ')); }); });
     if (nbad){ live.tbad = bad; live.tfb = {t:'Hmm! Look at the red words. Do they describe that landscape?', ok:false}; }
     else if (few){ live.tfb = {t:'Good! Now put at least three adjectives in every column.', ok:false}; }
     else { st.tableOk = true; save(); }
@@ -1182,7 +1246,7 @@ document.addEventListener('click', function(e){
     if (!live.sw){ live.sfb = 'First tap a word!'; renderDetective(); return; }
     var item = SORT.filter(function(x){ return x.w===live.sw; })[0];
     if (item.r===d.bk){ st.sort[item.w] = true; save(); live.sw = null; live.sfb = ''; live.badB = null; }
-    else { live.badB = d.bk; live.sfb = 'Not that basket! Look at the end of "'+item.w+'".'; }
+    else { miss('s|'+item.w, 'Language detective', item.w, BASKET_NAME[d.bk], BASKET_NAME[item.r]); live.badB = d.bk; live.sfb = 'Not that basket! Look at the end of "'+item.w+'".'; }
     renderDetective(); return;
   }
   /* 2.3 Activity 3 */
@@ -1190,32 +1254,980 @@ document.addEventListener('click', function(e){
     var ri = +d.riddle;
     if (st.riddles[ri]) return;
     if (d.img===RIDDLES[ri].img){ st.riddles[ri] = true; save(); renderRiddles(); return; }
+    miss('r|'+ri, 'Guess the photo', String(ri+1), IMG_NAME[d.img], IMG_NAME[RIDDLES[ri].img]);
     b.classList.remove('bad'); void b.offsetWidth; b.classList.add('bad'); return;
   }
   /* true / false */
   if (d.tf!=null){
     var ti = +d.tf, val = d.v==='1';
     if (val===TF[ti].a){ st.tf[ti] = true; save(); live.tfbad = null; }
-    else live.tfbad = ti+(val?'t':'f');
+    else { miss('f|'+ti, 'True or false', String(ti+1), val?'True':'False', TF[ti].a?'True':'False'); live.tfbad = ti+(val?'t':'f'); }
     renderTF(); return;
   }
   if (d.print){ window.print(); return; }
+  if (d.sendjump){ var rc = document.querySelector('.rpcard'); if (rc){ rc.scrollIntoView({behavior:'smooth', block:'start'}); var nm = document.getElementById('rpName'); if (nm) nm.focus({preventScroll:true}); } return; }
+  if (d.play){ closeUnlock(); openGame(); return; }
+  if (d.closegame){ closeGame(); return; }
+  if (d.closeunlock){ closeUnlock(); return; }
   if (d.reset==='match'){ st.match = {}; save(); matchOrder = null; pickedWord = null; renderMatch(); return; }
   if (d.reset==='sort'){ st.sort = {}; save(); sortOrder = null; live.sw = null; renderDetective(); return; }
   if (d.reset==='all'){
     if (!confirm('Start the trip again? Your shields and sentences will be deleted.')) return;
-    st = {stops:{}, match:{}, riddles:{}, table:null, tableOk:false, sort:{}, tf:{}, tfw:'', page:0};
+    st = {stops:{}, match:{}, riddles:{}, table:null, tableOk:false, sort:{}, tf:{}, tfw:'', mistakes:{}, papoiSeen:false, hi:st.hi||0, page:0};
     save(); matchOrder = null; riddleOpts = null; sortOrder = null; go(0); return;
   }
 });
 document.addEventListener('input', function(e){ if (e.target.id==='wr') live.draft = e.target.value; });
 document.addEventListener('keydown', function(e){
-  if (/TEXTAREA|INPUT/.test(e.target.tagName)) return;
+  if (/TEXTAREA|INPUT|SELECT/.test(e.target.tagName)) return;
+  if (gameOpen) return;
   if (e.key==='ArrowRight') go(cur+1);
   if (e.key==='ArrowLeft') go(cur-1);
 });
 
+/* =========================================================
+   INFORME PARA LA DOCENTE
+   El modulo de entrega (report-block, al pie) no conoce este motor:
+   lee la pantalla. Como el flipbook muestra una pagina por vez, aca se
+   deja escrito en #rpdata (oculto) el resumen de TODO el libro con las
+   clases que el modulo busca: .medal/.mt/.ms para los puntajes y
+   .item/.rn/.rpwas/.exp.wrong/.sol para los errores.
+   ========================================================= */
+function allDone(){
+  return STOPS.every(stopDone) && Object.keys(st.match).length===MATCH.length && st.tableOk &&
+    Object.keys(st.sort).length===SORT.length && Object.keys(st.riddles).length===RIDDLES.length &&
+    Object.keys(st.tf).length===TF.length && !!st.tfw;
+}
+function updateReport(){
+  var box = document.getElementById('rpdata'); if (!box) return;
+  var rows = [
+    ['Natural events', Object.keys(st.match).length, MATCH.length],
+    ['Landscapes', st.tableOk?1:0, 1],
+    ['Language detective', Object.keys(st.sort).length, SORT.length]
+  ];
+  STOPS.forEach(function(s){
+    var x = st.stops[s.id] || {c:{}};
+    var n = (x.a?1:0) + (x.c&&x.c[0]?1:0) + (x.c&&x.c[1]?1:0) + (x.b?1:0) + (x.w?1:0);
+    rows.push([stopLabel(s), n, 5]);
+  });
+  rows.push(['Guess the photo', Object.keys(st.riddles).length, RIDDLES.length]);
+  rows.push(['True or false', Object.keys(st.tf).length, TF.length]);
+  rows.push(['My true/false sentence', st.tfw?1:0, 1]);
+  var h = '';
+  rows.forEach(function(r){ h += '<div class="medal"><span class="mt">'+esc(r[0])+'</span><span class="ms">'+r[1]+' / '+r[2]+'</span></div>'; });
+  Object.keys(st.mistakes).forEach(function(k){
+    var m = st.mistakes[k];
+    h += '<div class="item"><span class="rn">'+esc(m.where+' · '+m.n)+'</span><span class="rpwas">'+esc(m.wrote)+'</span>'+
+         '<div class="exp wrong"><span class="sol">'+esc(m.right)+'</span></div></div>';
+  });
+  /* las oraciones propias no tienen puntaje, pero son lo mas rico para la docente */
+  var L = [];
+  STOPS.forEach(function(s){ var w = st.stops[s.id] && st.stops[s.id].w; if (w) L.push('    - '+stopLabel(s)+': '+w); });
+  if (st.tfw) L.push('    - True/false sentence: '+st.tfw);
+  var txt = (L.length ? '   MY SENTENCES:\n'+L.join('\n') : '') + (allDone() ? '\n   VIKING PAPOI UNLOCKED!' : '');
+  h += '<pre id="rpExtra">'+esc(txt)+'</pre>';
+  box.innerHTML = h;
+}
+
+/* =========================================================
+   VIKING PAPOI - la recompensa: banana vikinga en 8-bit
+   y un juego de correr y saltar como el dinosaurio de Chrome.
+   Sin sonido.
+   ========================================================= */
+var PAL = {K:'#141414', Y:'#FFD23F', y:'#D9A400', B:'#7A4A1E', G:'#A7B0BA', g:'#5C6670', W:'#FFF8E7',
+  E:'#FFFFFF', R:'#FF7FA0', O:'#FF7A1A', k:'#3B3B3B', L:'#E0592A', C:'#A8E2F7', c:'#5BB8E8', P:'#FF9A1A', w:'#F2F2F2'};
+var PAPOI_TOP = [
+  "........KKK........",
+  "........KBK........",
+  "........KBK........",
+  "....KKKKKKKKKKK....",
+  "KK.KGGGGGGGGGGGK.KK",
+  "KWKKGGGgGGGgGGGKKWK",
+  "KWWKGGGGGGGGGGGKWWK",
+  ".KWWKKKKKKKKKKKWWK.",
+  "...KYYYYYYYYYYYK...",
+  "...KYEEYYYYEEYYK...",
+  "...KYEKYYYYEKYYK...",
+  "...KRYYYYYYYYRYK...",
+  "...KYYYKKKKYYYYK...",
+  "...KOYYYYYYYYYOK...",
+  "...KOOYYYYYYYOOK...",
+  "....KOOOOOOOOOK....",
+  "....KYYOOOOOYYK....",
+  "....KYYYYYYYYYK....",
+  ".....KYYYYYYYYYK...",
+  "......KyYYYYYYYYK..",
+  ".......KyyYYYYYyK..",
+  "........KKyyyyyKK..",
+  "..........KBBBK...."
+];
+var PAPOI = [
+  PAPOI_TOP.concat([".........K...K.....", "........KK...KK...."]),
+  PAPOI_TOP.concat(["..........K.K......", ".........KK.KK....."]),
+  PAPOI_TOP.concat([".........KK.KK.....", "..................."])
+];
+var ROCK = [
+  "....KKKK....",
+  "..KKkkkkKK..",
+  ".KkkkkkkkkK.",
+  ".KkkLkkkkkK.",
+  "KkkkkkkLkkkK",
+  "KkkLLkkkkkkK",
+  "KkkkkkkkkkkK",
+  "KKKKKKKKKKKK"
+];
+var ICE = [
+  "..KKKKKK..",
+  ".KCCCCWCK.",
+  "KCWCCCCCcK",
+  "KCWCCCCCcK",
+  "KCCCCCCCcK",
+  "KCCCCCCccK",
+  "KCCCCCCCcK",
+  "KCWCCCCCcK",
+  "KCCCCCCCcK",
+  "KCCCCCCccK",
+  "KcCCCCCCcK",
+  "KccccccccK",
+  "KKKKKKKKKK"
+];
+var PUFFIN = [
+  [ "......KKK....",
+    ".....KKKKK...",
+    "...PPKwEKKK..",
+    "..PPPKwwKKKKK",
+    "...PPKwwwKKKK",
+    "......KwwwKK.",
+    ".......KKKK..",
+    "........PP..." ],
+  [ "......KKK....",
+    ".....KKKKK...",
+    "...PPKwEKK...",
+    "..PPPKwwKK...",
+    "...PPKwwwKKKK",
+    "......KwwwKKK",
+    ".......KKKKKK",
+    "........PP..." ]
+];
+function drawSprite(ctx, rows, x, y, sc, silhouette){
+  for (var r=0;r<rows.length;r++) for (var c=0;c<rows[r].length;c++){
+    var ch = rows[r][c]; if (ch==='.') continue;
+    ctx.fillStyle = silhouette ? 'rgba(20,20,20,.85)' : PAL[ch];
+    ctx.fillRect(Math.round(x+c*sc), Math.round(y+r*sc), sc, sc);
+  }
+}
+
+/* ---------- la tarjeta de la recompensa en el diario ---------- */
+function rewardHTML(){
+  var ok = allDone();
+  var parts = [
+    ['Stops', STOPS.filter(stopDone).length, STOPS.length],
+    ['Warm-ups', (Object.keys(st.match).length===MATCH.length?1:0)+(st.tableOk?1:0)+(Object.keys(st.sort).length===SORT.length?1:0), 3],
+    ['Quizzes', (Object.keys(st.riddles).length===RIDDLES.length?1:0)+(Object.keys(st.tf).length===TF.length&&st.tfw?1:0), 2]
+  ];
+  var prog = parts.map(function(p){ return '<span class="'+(p[1]===p[2]?'okp':'')+'">'+p[0]+' '+p[1]+'/'+p[2]+'</span>'; }).join('');
+  return '<div class="reward'+(ok?' on':'')+'">'+
+    '<canvas id="papoiCard" width="114" height="150" aria-label="Viking Papoi"></canvas>'+
+    '<div><span class="label" style="background:'+(ok?'var(--lima)':'#fff')+'">'+(ok?'Unlocked!':'Secret reward')+'</span>'+
+    '<h3>'+(ok?'Viking Papoi':'Who is it? ???')+'</h3>'+
+    (ok ? '<p>Your Viking banana is ready for adventure!</p><button class="btn" data-play="1" style="--c:var(--rojo)">&#9654; Play Papoi Run</button>'
+        : '<p>Finish <b>all</b> the exercises in the book to unlock a secret Viking friend and a game!</p><div class="prog">'+prog+'</div>')+
+    (ok && st.hi ? '<p class="hand" style="margin:6px 0 0">Your best score: '+st.hi+'</p>' : '')+
+    '</div></div>';
+}
+function drawPapoiIn(cv, silhouette){
+  if (!cv) return;
+  var ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  drawSprite(ctx, PAPOI[0], 0, 0, 6, silhouette);
+}
+
+/* ---------- aviso de desbloqueo (una sola vez) ---------- */
+function checkPapoi(){
+  if (st.papoiSeen || !allDone()) return;
+  st.papoiSeen = true;
+  try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){}
+  var ov = document.getElementById('unlockOv'); if (!ov) return;
+  ov.hidden = false;
+  drawPapoiIn(document.getElementById('papoiBig'), false);
+}
+function closeUnlock(){ var ov = document.getElementById('unlockOv'); if (ov) ov.hidden = true; }
+
+/* ---------- PAPOI RUN ---------- */
+var gameOpen = false, G = null, raf = 0;
+var GW = 720, GH = 240, GROUND = 214, SC = 3, PH = PAPOI[0].length*SC;
+function openGame(){
+  stopVideos();
+  document.getElementById('gameOv').hidden = false;
+  gameOpen = true;
+  var cv = document.getElementById('game');
+  G = {ctx: cv.getContext('2d'), state:'idle', t:0, last:0};
+  G.ctx.imageSmoothingEnabled = false;
+  resetGame(); G.state = 'idle';
+  raf = requestAnimationFrame(loop);
+}
+function closeGame(){
+  gameOpen = false; cancelAnimationFrame(raf);
+  document.getElementById('gameOv').hidden = true;
+  if (PAGES[cur].t==='journal') render();
+}
+function resetGame(){
+  G.py = 0; G.vy = 0; G.speed = 6; G.dist = 0; G.obs = []; G.next = 420; G.frame = 0; G.state = 'run';
+  G.stars = []; for (var i=0;i<40;i++) G.stars.push([Math.random()*GW, Math.random()*110]);
+  G.peb = []; for (var j=0;j<24;j++) G.peb.push([Math.random()*GW, GROUND+6+Math.random()*18]);
+}
+function jump(){
+  if (!G) return;
+  if (G.state!=='run'){ resetGame(); return; }
+  if (G.py===0) G.vy = 13.2;
+}
+function spawn(){
+  var r = Math.random(), o;
+  if (G.dist > 900 && r < 0.28){
+    var high = Math.random() < 0.5;
+    o = {kind:'puffin', w:13*SC, h:8*SC, y: high ? GROUND-120 : GROUND-38};
+  } else if (r < 0.62){
+    o = {kind:'rock', w:12*SC, h:8*SC, y: GROUND-8*SC};
+  } else {
+    o = {kind:'ice', w:10*SC, h:13*SC, y: GROUND-13*SC};
+  }
+  o.x = GW + 10;
+  G.obs.push(o);
+  G.next = 300 + Math.random()*260 + G.speed*14;
+}
+function hit(a, b){ return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y; }
+function loop(ts){
+  if (!gameOpen) return;
+  var dt = G.last ? Math.min(50, ts - G.last) : 16.7; G.last = ts;
+  var f = dt / 16.7;
+  G.t += dt;
+  if (G.state==='run'){
+    G.dist += G.speed * f;
+    G.speed = Math.min(13, 6 + G.dist/1800);
+    if (G.py>0 || G.vy>0){ G.py += G.vy*f; G.vy -= 0.72*f; if (G.py<=0){ G.py = 0; G.vy = 0; } }
+    G.next -= G.speed*f; if (G.next<=0) spawn();
+    G.obs.forEach(function(o){ o.x -= G.speed*f * (o.kind==='puffin' ? 1.15 : 1); });
+    G.obs = G.obs.filter(function(o){ return o.x + o.w > -10; });
+    G.frame += f;
+    var me = {x: 62+12, y: GROUND - PH - G.py + 10, w: 19*SC-24, h: PH-14};
+    for (var i=0;i<G.obs.length;i++){
+      var o = G.obs[i];
+      if (hit(me, {x:o.x+4, y:o.y+4, w:o.w-8, h:o.h-6})){
+        G.state = 'over';
+        var sc = Math.floor(G.dist/12);
+        if (sc > (st.hi||0)){ st.hi = sc; G.newHi = true; save(); } else G.newHi = false;
+        break;
+      }
+    }
+  }
+  drawGame();
+  raf = requestAnimationFrame(loop);
+}
+function drawGame(){
+  var c = G.ctx;
+  /* cielo nocturno de Islandia con auroras */
+  var gr = c.createLinearGradient(0,0,0,GROUND);
+  gr.addColorStop(0,'#0B1636'); gr.addColorStop(1,'#1B4F8C');
+  c.fillStyle = gr; c.fillRect(0,0,GW,GH);
+  c.fillStyle = '#FFF8E7';
+  G.stars.forEach(function(s){ c.fillRect(Math.round(s[0]), Math.round(s[1]), 2, 2); });
+  for (var x=0;x<GW;x+=6){
+    var y = 34 + Math.sin((x + G.t*0.04)/60)*14 + Math.sin(x/23)*4;
+    c.fillStyle = 'rgba(22,192,96,.55)'; c.fillRect(x, Math.round(y), 6, 18);
+    c.fillStyle = 'rgba(143,224,74,.35)'; c.fillRect(x, Math.round(y)+18, 6, 10);
+  }
+  /* montanas pixeladas que se mueven lento */
+  var off = (G.dist*0.15) % 240;
+  c.fillStyle = '#2B3A55';
+  for (var m=-1;m<5;m++){
+    var mx = m*240 - off;
+    for (var k=0;k<120;k+=6){
+      var hgt = 70 - Math.abs(k-60)*0.9;
+      c.fillRect(Math.round(mx+k), GROUND-hgt, 6, hgt);
+      c.fillRect(Math.round(mx+120+k), GROUND-hgt*0.6, 6, hgt*0.6);
+    }
+    c.fillStyle = '#FFF8E7';
+    c.fillRect(Math.round(mx+48), GROUND-70, 24, 8);
+    c.fillStyle = '#2B3A55';
+  }
+  /* playa de arena negra */
+  c.fillStyle = '#141414'; c.fillRect(0, GROUND, GW, GH-GROUND);
+  c.fillStyle = '#FFD23F'; c.fillRect(0, GROUND, GW, 3);
+  c.fillStyle = '#5C6670';
+  G.peb.forEach(function(p){ var px = ((p[0] - G.dist) % GW + GW) % GW; c.fillRect(Math.round(px), Math.round(p[1]), 4, 3); });
+  /* obstaculos */
+  G.obs.forEach(function(o){
+    var spr = o.kind==='rock' ? ROCK : o.kind==='ice' ? ICE : PUFFIN[Math.floor(G.t/160)%2];
+    drawSprite(c, spr, o.x, o.y, SC);
+  });
+  /* Papoi */
+  var fr = G.py>0 ? 2 : (G.state==='run' ? Math.floor(G.frame/6)%2 : 0);
+  drawSprite(c, PAPOI[fr], 62, GROUND - PH - G.py, SC);
+  /* marcador */
+  c.font = 'bold 18px "Courier New", monospace'; c.textAlign = 'right';
+  c.fillStyle = '#FFF8E7';
+  var score = ('00000' + Math.floor(G.dist/12)).slice(-5);
+  c.fillText('HI ' + ('00000'+(st.hi||0)).slice(-5) + '   ' + score, GW-14, 26);
+  c.textAlign = 'center';
+  if (G.state==='idle'){
+    c.fillStyle = 'rgba(0,0,0,.55)'; c.fillRect(GW/2-210, 70, 420, 92);
+    c.fillStyle = '#FFD23F'; c.font = 'bold 28px "Courier New", monospace';
+    c.fillText('PAPOI RUN', GW/2, 106);
+    c.fillStyle = '#FFF8E7'; c.font = 'bold 16px "Courier New", monospace';
+    c.fillText('Tap or press SPACE to start', GW/2, 140);
+  }
+  if (G.state==='over'){
+    c.fillStyle = 'rgba(0,0,0,.55)'; c.fillRect(GW/2-200, 70, 400, 92);
+    c.fillStyle = '#FFD23F'; c.font = 'bold 30px "Courier New", monospace';
+    c.fillText(G.newHi ? 'NEW RECORD!' : 'GAME OVER', GW/2, 108);
+    c.fillStyle = '#FFF8E7'; c.font = 'bold 16px "Courier New", monospace';
+    c.fillText('Tap or press SPACE to play again', GW/2, 140);
+  }
+}
+document.addEventListener('keydown', function(e){
+  if (!gameOpen) return;
+  if (e.key===' ' || e.key==='ArrowUp' || e.key==='w'){ e.preventDefault(); jump(); }
+  if (e.key==='Escape') closeGame();
+});
+document.getElementById('game').addEventListener('pointerdown', function(e){ e.preventDefault(); jump(); });
+
 render();
+</script>
+<style id="report-style">/* =========================================================
+   LA TARJETA DE ENTREGA
+   =========================================================
+   Se estila con sus propias variables --rp-*, que toman por defecto
+   las del sitio si existen. Para adaptarla a otra paleta alcanza con
+   redefinir el bloque de abajo: no hay que tocar ninguna regla.
+   ========================================================= */
+.rpcard{
+  --rp-fondo:  var(--crema);
+  --rp-papel:  #fff;
+  --rp-tinta:  var(--negro);
+  --rp-borde:  var(--negro);
+  --rp-acento: var(--rojo);
+  --rp-acento-claro: var(--amarillo);
+  --rp-sombra: var(--negro);
+  --rp-titulo: var(--titulo);
+  --rp-cuerpo: var(--cuerpo);
+  --rp-suave:  #5c4a2c;
+  --rp-bien:   #14663a;
+  --rp-mal:    #8f1230;
+
+  background:var(--rp-fondo);
+  border:4px solid var(--rp-borde);
+  border-radius:18px;
+  padding:26px;
+  margin:0 0 26px;
+  color:var(--rp-tinta);
+  box-shadow:10px 10px 0 var(--rp-sombra);
+  transform:rotate(.25deg);
+  position:relative;
+}
+.rpcard h2{
+  font-family:var(--rp-titulo);font-weight:900;font-size:1.5rem;line-height:1.15;
+  letter-spacing:.6px;margin:.1rem 0 .3rem;color:var(--rp-tinta);
+}
+.rpcard .sub{font-size:.92rem;color:var(--rp-suave);margin:0 0 16px;line-height:1.5}
+.rpcard .tag{
+  display:inline-block;font-family:var(--rp-titulo);font-weight:900;font-size:.72rem;
+  letter-spacing:2px;text-transform:uppercase;background:var(--rp-acento-claro);
+  border:3px solid var(--rp-borde);border-radius:999px;padding:2px 14px;margin-bottom:10px;
+}
+.rprow{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.rprow label{
+  flex:1 1 180px;display:flex;flex-direction:column;gap:5px;
+  font-family:var(--rp-titulo);font-weight:700;font-size:.76rem;letter-spacing:1.4px;
+  text-transform:uppercase;color:var(--rp-suave);
+}
+.rprow input,.rprow select{
+  font-family:var(--rp-cuerpo);font-size:1rem;font-weight:600;color:var(--rp-tinta);
+  background:var(--rp-papel);border:3px solid var(--rp-borde);border-radius:10px;
+  padding:8px 11px;width:100%;
+}
+.rprow select{cursor:pointer;height:46px}
+/* el placeholder tiene que verse como pista, no como dato ya cargado */
+.rprow input::placeholder{color:#a8977a;font-weight:500}
+.rprow input:focus,.rprow select:focus{outline:0;background:#fff;box-shadow:0 0 0 4px var(--rp-acento)}
+.rpmsg{
+  margin:12px 0 0;font-family:var(--rp-titulo);font-weight:700;font-size:.95rem;
+  letter-spacing:.4px;min-height:1.2em;
+}
+.rpmsg.ok{color:var(--rp-bien)}
+.rpmsg.no{color:var(--rp-mal)}
+.rpfine{margin:10px 0 0;font-size:.78rem;color:#7a6647;line-height:1.5}
+
+/* la tarjeta trae sus propios botones: no depende de los del sitio */
+.rpcard .btnrow{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:16px}
+.rpcard .btn{
+  font-family:var(--rp-titulo);font-weight:700;font-size:.95rem;letter-spacing:.7px;
+  color:var(--rp-borde);background:linear-gradient(180deg,var(--rp-acento-claro),var(--rp-acento));
+  border:3px solid var(--rp-borde);border-radius:999px;padding:10px 24px;cursor:pointer;
+  box-shadow:5px 5px 0 var(--rp-borde);transition:transform .07s, box-shadow .07s;
+}
+.rpcard .btn:hover{filter:brightness(1.07)}
+.rpcard .btn:active{transform:translate(5px,5px);box-shadow:0 0 0 var(--rp-borde)}
+.rpcard .btn:disabled{opacity:.6;cursor:default}
+.rpcard .btn.ghost{background:var(--rp-papel)}
+/* el boton de copiar nace escondido y aparece si falla un envio */
+.rpcard [hidden]{display:none!important}
+</style>
+<script id="report-block">
+/* ============================================================
+   ENTREGA DE RESULTADOS A LA DOCENTE
+   ============================================================
+   Un solo modulo para todas las paginas de un sitio de ejercicios.
+   NO toca el motor de los ejercicios: espera a que el alumno
+   corrija y despues LEE LA PANTALLA (los marcadores, los carteles
+   de error, los campos pintados de rojo).
+
+   Por que asi: un sitio suele tener varios motores escritos en
+   momentos distintos. Engancharse a cada uno son N integraciones
+   y N maneras de romperse. Leyendo el DOM hay una sola.
+
+   Si todas las paginas viven en el mismo dominio, cada parada
+   queda guardada en el navegador y el indice puede mandar el
+   acumulado.
+
+   El envio va a un Web App de Apps Script: escribe una fila en la
+   planilla y le manda el mail a la docente que el alumno elige.
+   ============================================================ */
+(function(){
+"use strict";
+
+/* ============================================================
+   CONFIGURACION - es lo unico que hay que tocar para otro sitio
+   ============================================================ */
+var CONFIG = {
+
+  /* La URL del Web App, terminada en /exec. Mientras este vacia la
+     tarjeta muestra solo el boton de copiar: se puede publicar asi. */
+  url: "https://script.google.com/macros/s/AKfycbz4mC6wlKjs_tQHfEjCxDOfbYjYAzDui3pZFttOfFgpxhd4WpLmaE-2WRsJ_edVPz3-ow/exec",
+
+  /* A quien puede entregar el alumno. El ve el nombre; lo que viaja es
+     el mail, y el script del otro lado SOLO acepta estos. */
+  docentes: [
+    { nombre: "Miss Ani",    mail: "anabella_ld@buber.edu.ar" },
+    { nombre: "Miss Aldi",   mail: "aferrari@buber.edu.ar" },
+    { nombre: "Miss Flower", mail: "florrafalowicz@buber.edu.ar" }
+  ],
+
+  /* Lista cerrada: asi la planilla se puede filtrar, en vez de tener
+     "6-1", "6 1" y "sexto 1" como cursos distintos. */
+  cursos: ["5-1", "5-2", "5-3"],
+
+  /* Donde mirar. Esto es lo que cambia entre un sitio y otro:
+     ver references/contrato-dom.md */
+  sel: {
+    wrap:        ".wrap",          /* contenedor donde va la tarjeta */
+    antesDe:     "nav.nav",        /* la tarjeta va despues de esto (opcional) */
+    home:        "#no-home",       /* el flipbook no tiene indice aparte */
+
+    marcador:    ".scoreline",     /* un "3 / 5" suelto */
+    medalla:     ".medal",         /* marcador CON nombre de ejercicio */
+    medallaNom:  ".mt",
+    medallaPunt: ".ms",
+    insignia:    "",               /* el flipbook no tiene juegos con insignia */
+
+    error:       ".exp.wrong",     /* cartel de una respuesta incorrecta */
+    solucion:    ".sol",           /* adentro del cartel: la respuesta */
+    item:        ".item",          /* el bloque de un ejercicio */
+    numero:      ".rn",            /* el numerito del item */
+    marcadoMal:  ".rpwas"          /* lo que escribio mal */
+  },
+
+  /* "Answer: " y similares se sacan del texto de la solucion */
+  prefijoSolucion: /^(answer|respuesta)\s*:\s*/i,
+
+  /* Todo lo que ve el alumno. Cambiar de idioma es cambiar esto. */
+  t: {
+    tag:        "Your report",
+    titulo:     "Send your result to your teacher",
+    tituloHome: "Send your work to your teacher",
+    copete:     "Check your answers first. Then write your name, choose your class & your teacher and then press the button.",
+    copeteHome: "This is everything you have done on this computer. Write your name, choose your class & your teacher and then press the button.",
+    soloCopia:      "Your report",
+    copeteCopia:    "Check your answers first, then write your name and copy your report to give it to your teacher.",
+    nombre:     "Name",
+    phNombre:   "Your name",
+    curso:      "Class",
+    elegirCurso:"Choose your class",
+    docente:    "Teacher",
+    elegirDoc:  "Choose your teacher",
+    enviar:     "Send to my teacher",
+    enviarOtra: "Send my new result",
+    enviado:    "Sent",
+    copiar:     "Copy my report",
+    atajo:      "Send this to my teacher",
+    letraChica: "Only your name, your class and your answers go to the teacher you choose. Nothing else.",
+    faltaNombre:"Write your name first.",
+    faltaCurso: "Choose your class first.",
+    faltaDoc:   "Choose your teacher first.",
+    nadaAun:    "There is nothing to send yet. Check your answers first.",
+    mandando:   "Sending...",
+    ok:         "Sent to $. If you do more, the button comes back.",
+    sinConfirmar:"It could not be confirmed, so check with your teacher.",
+    repetido:   "You just sent this one. Wait a moment before sending it again.",
+    rechazado:  "The teacher's list did not take it. Tell your teacher.",
+    fallo:      "It did not go. Press the button again, or copy your report and give it to your teacher.",
+    copiado:    "Copied. Now give it to your teacher the way she asks you to.",
+    noCopiado:  "Your report could not be copied. Tell your teacher.",
+    miraOtraVez:"To look at again:",
+    escribio:   "wrote:",
+    correcto:   "right:"
+  }
+};
+
+/* ============================================================
+   DE ACA PARA ABAJO no hace falta tocar nada para un sitio nuevo
+   ============================================================ */
+var S = CONFIG.sel, T = CONFIG.t;
+var PUEDE_ENVIAR = !!CONFIG.url;
+var KEY = "entrega.resultados.v1";
+var wrap = document.querySelector(S.wrap);
+if(!wrap) return;
+
+/* ---------- memoria del navegador, siempre con red ----------
+   localStorage tira SecurityError con file:// y con data: URL, asi que
+   todo va envuelto: la tarjeta tiene que andar igual. */
+function leer(){
+  try{
+    var raw = window.localStorage.getItem(KEY);
+    var o = raw ? JSON.parse(raw) : null;
+    if(!o || typeof o !== "object") o = {};
+    if(!o.stops) o.stops = {};
+    return o;
+  }catch(e){ return { stops: {} }; }
+}
+function guardar(o){
+  try{ window.localStorage.setItem(KEY, JSON.stringify(o)); }catch(e){}
+}
+
+function slug(){
+  var p = window.location.pathname.split("/").pop() || "index.html";
+  return p.replace(/\.html?$/i, "") || "index";
+}
+var SLUG = slug();
+/* El indice se reconoce por lo que tiene en pantalla, no por el nombre del
+   archivo: abierto desde un pendrive la URL no sirve de nada. */
+var ES_HOME = !!(S.home && document.querySelector(S.home));
+function tituloPagina(){
+  var h = document.querySelector(".hero h1") || document.querySelector("h1");
+  return h ? h.textContent.trim() : document.title;
+}
+function texto(n){ return n ? String(n.textContent).replace(/\s+/g, " ").trim() : ""; }
+function parseScore(s){
+  var m = /(\d+)\s*\/\s*(\d+)/.exec(s || "");
+  return m ? { got: parseInt(m[1], 10), total: parseInt(m[2], 10) } : null;
+}
+
+/* ============================================================
+   LEER LA PANTALLA
+   ============================================================ */
+function numeroDe(caja){
+  var it = (caja.closest && S.item) ? caja.closest(S.item) : null;
+  if(it){
+    var rn = S.numero ? it.querySelector(S.numero) : null;
+    if(rn) return { n: texto(rn), cont: it };
+  }
+  /* cartel en un panel numerado abajo del texto */
+  var pi = caja.parentNode;
+  if(pi && pi.className && String(pi.className).indexOf("expitem") >= 0){
+    return { n: texto(pi.querySelector(".en")), cont: null };
+  }
+  return { n: "", cont: null };
+}
+function loQueEscribio(cont, n, tarjeta){
+  var partes = [], i;
+  var malos = (cont && S.marcadoMal) ? cont.querySelectorAll(S.marcadoMal) : [];
+  for(i = 0; i < malos.length; i++){
+    /* un boton de opcion (el tiempo elegido en el paso 1) tiene .value
+       pero esta vacio: lo que importa es lo que dice el boton */
+    var esOpcion = malos[i].tagName === "BUTTON" && malos[i].classList.contains("pickbtn");
+    var v = esOpcion ? texto(malos[i]) : (malos[i].value !== undefined ? malos[i].value : texto(malos[i]));
+    partes.push(String(v).trim() || "-");
+  }
+  if(partes.length) return partes.join(" + ");
+  /* si el cartel vive en un panel, se busca el item por su numero */
+  if(!cont && tarjeta && n){
+    var marcas = tarjeta.querySelectorAll(".rn, .sn, .gn");
+    for(i = 0; i < marcas.length; i++){
+      if(texto(marcas[i]) !== n) continue;
+      var padre = marcas[i].parentNode;
+      if(padre && padre.className && String(padre.className).indexOf("schip") >= 0){
+        /* ficha que guarda su respuesta en .value; el texto va despues del
+           numerito, y el numerito se saca por su LARGO: una expresion como
+           /^\d+/ se comeria una ficha que diga "2019" */
+        var val = String(padre.value || "").trim();
+        var etiqueta = texto(padre);
+        var sn = padre.querySelector(".sn");
+        if(sn) etiqueta = etiqueta.slice(texto(sn).length).trim();
+        return val ? (val + " " + etiqueta) : "-";
+      }
+      /* Texto corrido con huecos: el input es el hermano que sigue al numerito.
+         Sin esto se leian TODOS los inputs en rojo del texto y cada renglon del
+         informe mostraba los errores de los demas. */
+      var sig = marcas[i].nextElementSibling;
+      if(sig && sig.tagName === "INPUT"){
+        return String(sig.value || "").trim() || "-";
+      }
+      /* Varios huecos en una misma linea de conversacion: se lee SOLO el grupo
+         de opciones de este numero, no toda la linea. */
+      var caja2 = (padre && String(padre.className).indexOf("optgroup") >= 0)
+        ? padre : (padre ? padre.parentNode : null);
+      var ins = caja2 ? caja2.querySelectorAll("input.no, .pickbtn.bad") : [];
+      if(ins.length){
+        var out = [];
+        for(var k = 0; k < ins.length; k++){
+          var vv = ins[k].value !== undefined && ins[k].value !== "" ? ins[k].value : texto(ins[k]);
+          out.push(String(vv).trim() || "-");
+        }
+        return out.join(" + ");
+      }
+    }
+  }
+  return "-";
+}
+function mirarPantalla(){
+  var partes = [], errores = [], i;
+
+  /* 1. marcadores CON nombre */
+  var medallas = S.medalla ? document.querySelectorAll(S.medalla) : [];
+  for(i = 0; i < medallas.length; i++){
+    var nom = texto(medallas[i].querySelector(S.medallaNom));
+    var sc = parseScore(texto(medallas[i].querySelector(S.medallaPunt)));
+    if(nom) partes.push({ name: nom, got: sc ? sc.got : null, total: sc ? sc.total : null });
+  }
+  /* 2. si no hay, cualquier marcador suelto */
+  if(!partes.length && S.marcador){
+    var lineas = document.querySelectorAll(S.marcador);
+    for(i = 0; i < lineas.length; i++){
+      var s2 = parseScore(texto(lineas[i]));
+      if(s2) partes.push({ name: "Exercise " + (partes.length + 1), got: s2.got, total: s2.total });
+    }
+  }
+  /* 3. juegos ganados */
+  var insignias = S.insignia ? document.querySelectorAll(S.insignia) : [];
+  if(insignias.length){
+    var abiertas = 0;
+    for(i = 0; i < insignias.length; i++){
+      if(String(insignias[i].className).indexOf("hidden") < 0) abiertas++;
+    }
+    partes.push({ name: "Games won", got: abiertas, total: insignias.length });
+  }
+
+  /* 4. los errores, que es lo que le sirve a la docente */
+  var malas = S.error ? document.querySelectorAll(S.error) : [];
+  for(i = 0; i < malas.length; i++){
+    var caja = malas[i];
+    var tarjeta = caja.closest ? caja.closest(".card, section") : null;
+    var quien = tarjeta ? texto(tarjeta.querySelector("h2")) : "";
+    var d = numeroDe(caja);
+    var sol = texto(caja.querySelector(S.solucion)).replace(CONFIG.prefijoSolucion, "");
+    var escribio = loQueEscribio(d.cont, d.n, tarjeta);
+    /* un renglon sin respuesta correcta ni respuesta del alumno no le dice
+       nada a nadie: no se informa */
+    if(sol || escribio !== "-"){
+      errores.push({ trial: quien, n: d.n, right: sol, was: escribio });
+    }
+  }
+
+  var got = 0, total = 0;
+  for(i = 0; i < partes.length; i++){
+    if(partes[i].total){ got += partes[i].got || 0; total += partes[i].total; }
+  }
+  /* Entrar a una pagina no es haberla hecho: hasta que no corrige o gana algo
+     no hay nada que contar. */
+  var hizo = (got > 0) || document.querySelectorAll(".exp, " + (S.error || ".exp")).length > 0;
+  return { parts: partes, wrong: errores, got: got, total: total, hizo: hizo };
+}
+
+function anotar(){
+  if(ES_HOME) return null;
+  var r = mirarPantalla();
+  if(!r.total || !r.hizo) return r;
+  var o = leer();
+  o.stops[SLUG] = {
+    title: tituloPagina(), got: r.got, total: r.total,
+    parts: r.parts, wrong: r.wrong,
+    when: new Date().toISOString().slice(0, 10)
+  };
+  guardar(o);
+  return r;
+}
+
+/* ============================================================
+   EL TEXTO DEL INFORME
+   ============================================================ */
+function bloque(titulo, d){
+  var L = [], i;
+  L.push(titulo.toUpperCase() + "  -  " + d.got + " / " + d.total);
+  for(i = 0; i < d.parts.length; i++){
+    if(d.parts[i].total) L.push("   " + d.parts[i].name + ": " + d.parts[i].got + " / " + d.parts[i].total);
+  }
+  if(d.wrong && d.wrong.length){
+    L.push("   " + T.miraOtraVez);
+    for(i = 0; i < d.wrong.length; i++){
+      var w = d.wrong[i];
+      L.push("    - " + (w.trial ? w.trial + " " : "") + (w.n ? "(" + w.n + ") " : "")
+             + T.escribio + " " + w.was + "  ->  " + T.correcto + " " + w.right);
+    }
+  }
+  return L.join("\n");
+}
+function informe(){
+  var o = leer(), L = [], k;
+  if(ES_HOME){
+    var hubo = false, got = 0, total = 0;
+    for(k in o.stops){
+      if(Object.prototype.hasOwnProperty.call(o.stops, k)){
+        var d = o.stops[k];
+        L.push(bloque(d.title + "  (" + d.when + ")", d));
+        L.push("");
+        got += d.got; total += d.total;
+        hubo = true;
+      }
+    }
+    if(!hubo) return null;
+    L.unshift("EVERYTHING SO FAR: " + got + " / " + total + "\n");
+    return { texto: L.join("\n"), got: got, total: total, stop: "Everything so far" };
+  }
+  var r = mirarPantalla();
+  if(!r.total || !r.hizo) return null;
+  var extra = document.getElementById("rpExtra");
+  var txt = bloque(tituloPagina(), r);
+  /* el flipbook deja aca las oraciones del alumno, ya con su sangria */
+  if(extra && extra.textContent.trim()) txt += "\n" + extra.textContent;
+  return { texto: txt, got: r.got, total: r.total, stop: tituloPagina() };
+}
+
+/* ============================================================
+   LA TARJETA
+   ============================================================ */
+var opciones = "", cursos = "", i2;
+for(i2 = 0; i2 < CONFIG.docentes.length; i2++){
+  opciones += '<option value="' + CONFIG.docentes[i2].mail + '">' + CONFIG.docentes[i2].nombre + '</option>';
+}
+for(i2 = 0; i2 < CONFIG.cursos.length; i2++){
+  cursos += '<option value="' + CONFIG.cursos[i2] + '">' + CONFIG.cursos[i2] + '</option>';
+}
+
+var card = document.createElement("section");
+card.className = "card rpcard";
+card.innerHTML =
+  '<span class="tag">' + T.tag + '</span>' +
+  '<h2>' + (PUEDE_ENVIAR ? (ES_HOME ? T.tituloHome : T.titulo) : T.soloCopia) + '</h2>' +
+  '<p class="sub">' + (PUEDE_ENVIAR ? (ES_HOME ? T.copeteHome : T.copete) : T.copeteCopia) + '</p>' +
+  '<div class="rprow">' +
+    '<label>' + T.nombre + '<input type="text" id="rpName" autocomplete="off" placeholder="' + T.phNombre + '"></label>' +
+    (CONFIG.cursos.length ? '<label>' + T.curso + '<select id="rpClass">' +
+      '<option value="">' + T.elegirCurso + '</option>' + cursos + '</select></label>' : "") +
+    (PUEDE_ENVIAR ? '<label>' + T.docente + '<select id="rpTeacher">' +
+      '<option value="">' + T.elegirDoc + '</option>' + opciones + '</select></label>' : "") +
+  '</div>' +
+  /* El informe NO se le muestra al alumno: la tarjeta es nombre, curso,
+     docente y boton. El de copiar nace escondido y aparece si algo falla. */
+  '<div class="btnrow">' +
+    (PUEDE_ENVIAR ? '<button class="btn" id="rpSend" type="button">' + T.enviar + '</button>' : "") +
+    '<button class="btn ghost" id="rpCopy" type="button"' + (PUEDE_ENVIAR ? ' hidden' : '') + '>' + T.copiar + '</button>' +
+  '</div>' +
+  '<p class="rpmsg" id="rpMsg"></p>' +
+  '<p class="rpfine">' + T.letraChica + '</p>';
+
+/* Va donde termina el resultado, no al final de todo */
+var ancla = S.antesDe ? document.querySelector(S.antesDe) : null;
+var nav = document.querySelector("nav.bottomnav");
+if(ancla && ancla.parentNode === wrap && ancla.nextSibling) wrap.insertBefore(card, ancla.nextSibling);
+else if(nav && nav.parentNode === wrap) wrap.insertBefore(card, nav);
+else wrap.appendChild(card);
+
+var elName = document.getElementById("rpName");
+var elClass = document.getElementById("rpClass");
+var elTeacher = document.getElementById("rpTeacher");
+var elMsg = document.getElementById("rpMsg");
+var elSend = document.getElementById("rpSend");
+var elCopy = document.getElementById("rpCopy");
+
+/* Las casillas arrancan VACIAS siempre. No se recuerdan a proposito: el
+   nombre de otro ya cargado es una entrega mal atribuida esperando a pasar. */
+(function limpiarViejo(){
+  var o = leer();
+  if(o.name || o.klass || o.teacher){
+    delete o.name; delete o.klass; delete o.teacher;
+    guardar(o);
+  }
+})();
+
+var enviado = null;   /* el texto del ultimo informe que salio */
+
+/* ---------- el boton que baja hasta la tarjeta ----------
+   Va en la misma fila que "corregir", que es donde el alumno esta mirando
+   cuando le aparece el puntaje. */
+function ponerAtajos(){
+  var cards = document.querySelectorAll(".card, .gamecard");
+  for(var i = 0; i < cards.length; i++){
+    var c = cards[i];
+    if(c === card || c.querySelector(".rpjump")) continue;
+    var marcador = S.marcador ? c.querySelector(S.marcador) : null;
+    var insignia = S.insignia ? c.querySelector(".done") : null;
+    var hay = (marcador && /[0-9]/.test(texto(marcador))) ||
+              (insignia && String(insignia.className).indexOf("hidden") < 0);
+    var fila = c.querySelector(".btnrow");
+    if(!hay || !fila) continue;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn ghost rpjump";
+    b.textContent = T.atajo;
+    b.addEventListener("click", function(){
+      card.scrollIntoView({ block: "start" });
+      elName.focus();
+    });
+    fila.appendChild(b);
+  }
+}
+
+function pintar(){
+  var r = informe();
+  ponerAtajos();
+  /* Si siguio trabajando despues de enviar, el boton vuelve: lo que se evita
+     es mandar dos veces LO MISMO, no que entregue lo que hizo despues. */
+  if(elSend && enviado !== null && r && r.texto !== enviado){
+    elSend.disabled = false;
+    elSend.textContent = T.enviarOtra;
+  }
+}
+
+/* cada click puede cambiar el puntaje: se vuelve a mirar la pantalla */
+var pend = null;
+document.addEventListener("click", function(){
+  if(pend) window.clearTimeout(pend);
+  pend = window.setTimeout(function(){ anotar(); pintar(); }, 250);
+}, true);
+window.addEventListener("pagehide", function(){ anotar(); });
+
+function aviso(t, bien){
+  elMsg.textContent = t;
+  elMsg.className = "rpmsg " + (bien ? "ok" : "no");
+}
+function cabecera(){
+  return (elName.value.trim() || "(no name)") +
+         "   " + (elClass && elClass.value ? elClass.value : "-") +
+         "   " + new Date().toISOString().slice(0, 10);
+}
+
+/* ---------- copiar: el plan B, funciona hasta sin internet ---------- */
+elCopy.addEventListener("click", function(){
+  var r = informe();
+  if(!r){ aviso(T.nadaAun, false); return; }
+  var t = cabecera() + "\n" + r.texto;
+  var ok = false;
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t);
+      ok = true;
+    }
+  }catch(e){}
+  if(!ok){
+    try{
+      var ta = document.createElement("textarea");
+      ta.value = t;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+    }catch(e2){ ok = false; }
+  }
+  aviso(ok ? T.copiado : T.noCopiado, ok);
+});
+
+/* ============================================================
+   ENVIAR
+   ============================================================ */
+if(elSend){
+  elSend.addEventListener("click", function(){
+    var r = informe();
+    if(!elName.value.trim()){ aviso(T.faltaNombre, false); elName.focus(); return; }
+    if(elClass && !elClass.value){ aviso(T.faltaCurso, false); elClass.focus(); return; }
+    if(!elTeacher.value){ aviso(T.faltaDoc, false); elTeacher.focus(); return; }
+    if(!r){ aviso(T.nadaAun, false); return; }
+
+    var datos = {
+      nombre_alumno: elName.value.trim(),
+      curso: elClass ? elClass.value : "",
+      docente: elTeacher.value,
+      docente_nombre: elTeacher.options[elTeacher.selectedIndex].textContent,
+      pagina: r.stop,
+      puntaje: r.got + " / " + r.total,
+      resultado: r.texto,
+      timestamp: new Date().toISOString()
+    };
+    var cuerpo = JSON.stringify(datos);
+    /* Texto plano a proposito: en no-cors el navegador solo acepta unos pocos
+       Content-Type y con application/json ni sale el pedido. Del otro lado
+       Apps Script lo lee igual con JSON.parse. */
+    var cabeceras = { "Content-Type": "text/plain;charset=utf-8" };
+
+    elSend.disabled = true;
+    aviso(T.mandando, true);
+
+    var bien = function(extra){
+      enviado = r.texto;
+      elSend.textContent = T.enviado;
+      elCopy.hidden = true;
+      aviso(T.ok.replace("$", datos.docente_nombre) + (extra ? " " + extra : ""), true);
+    };
+    var mal = function(txt, conCopia){
+      elSend.disabled = false;
+      /* si queda diciendo "Sent" el alumno cree que ya entrego */
+      elSend.textContent = (enviado === null) ? T.enviar : T.enviarOtra;
+      if(conCopia !== false) elCopy.hidden = false;
+      aviso(txt || T.fallo, false);
+    };
+
+    /* ================== LEER ESTO ==================
+       Primero se intenta en modo CORS, que es el bueno: Apps Script devuelve
+       las cabeceras necesarias, asi que se puede LEER la respuesta y saber de
+       verdad si el servidor escribio la fila. Ese "Sent" no es optimista: es
+       lo que contesto el servidor.
+
+       Si ese camino se cae -sin internet, o un filtro de la escuela- se
+       reintenta en no-cors. AHI la respuesta es OPACA: el navegador no deja
+       ver ni el estado ni el cuerpo, asi que "el pedido salio" es todo lo que
+       se sabe. No prueba que se haya escrito la fila ni que el mail haya
+       salido, y por eso el cartel lo dice. La prueba de verdad es la planilla.
+       =============================================== */
+    var aCiegas = function(){
+      try{
+        window.fetch(CONFIG.url, { method: "POST", mode: "no-cors", headers: cabeceras, body: cuerpo })
+          .then(function(){ bien(T.sinConfirmar); }, function(){ mal(); });
+      }catch(e2){ mal(); }
+    };
+    try{
+      window.fetch(CONFIG.url, { method: "POST", headers: cabeceras, body: cuerpo })
+        .then(function(resp){ return resp.text(); })
+        .then(function(txt){
+          var o;
+          try{ o = JSON.parse(txt); }catch(e3){ o = null; }
+          if(o && o.status === "ok") bien("");
+          else if(o && /ya enviado/.test(o.message || "")) mal(T.repetido, false);
+          else if(o) mal(T.rechazado);
+          else aCiegas();
+        }, aCiegas);
+    }catch(e){ aCiegas(); }
+  });
+}
+
+/* Para el diagnostico: devuelve EXACTAMENTE el informe que se mandaria.
+   No cambia nada de lo que ve el alumno; sirve para que, una vez instalado el
+   modulo, se pueda comprobar desde la consola que lo que viaja es lo que se
+   espera, sin depender de que un script aparte imite esta logica. */
+window.__entregaInforme = informe;
+
+anotar();
+pintar();
+})();
 </script>
 </body>
 </html>
