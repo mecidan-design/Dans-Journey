@@ -233,6 +233,51 @@ button.ph{cursor:pointer; width:100%}
 .nav .btn[disabled]{opacity:.4; cursor:default}
 .nav .where{font-family:var(--titulo); background:var(--crema); border:var(--linea); border-radius:12px; padding:6px 14px; box-shadow:var(--sombra-chica); text-align:center}
 
+/* ---------- comparativos (language detective) ---------- */
+.cmp{margin-bottom:10px}
+.cmp .adj{font-family:var(--mano); color:var(--gris)}
+.opts{display:flex; flex-wrap:wrap; gap:8px; margin:2px 0 4px 22px}
+.opt{background:#fff; border:3px solid var(--negro); border-radius:10px; padding:4px 12px; box-shadow:3px 3px 0 var(--negro); font-family:var(--titulo); font-size:.9rem}
+.opt:hover{background:var(--amarillo)}
+.opt.bad{background:#FFB3B3; animation:shake .35s; text-decoration:line-through}
+.hint{margin:4px 0 0 22px; background:#E6F3FB; border:2px solid #1C7FB0; border-radius:8px; padding:3px 10px; font-size:.92rem; display:inline-block}
+.detective{background:#fff; border:var(--linea); border-radius:16px; overflow:hidden; box-shadow:var(--sombra); transform:rotate(-1deg); position:relative; z-index:1}
+.detective .dh{background:#0E4C8A; color:#fff; font-family:var(--titulo); padding:8px 14px; font-size:1rem}
+.detective .db{padding:10px 16px 12px; color:#0E4C8A}
+.detective .db p{margin:0 0 4px}
+.detective ul{margin:8px 0 0; padding-left:20px; color:var(--negro)}
+.detective li{margin-bottom:8px; font-weight:bold}
+.detective li span{font-weight:normal; color:#0E4C8A}
+.detective u{color:var(--rojo); text-decoration-thickness:3px}
+.lupa{width:90px; display:block; margin:-14px 0 0 auto; transform:rotate(8deg); position:relative; z-index:2}
+.baskets{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:10px 0}
+.basket{background:#fff; border:var(--linea); border-radius:14px 14px 22px 22px; box-shadow:var(--sombra-chica); padding:8px; text-align:center; min-height:96px;
+  background-image:repeating-linear-gradient(45deg, rgba(200,149,88,.18) 0 8px, transparent 8px 16px)}
+.basket b{display:block; font-family:var(--titulo); font-size:1rem}
+.basket small{display:block; font-family:var(--mano); color:var(--gris)}
+.basket .in{display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin-top:6px}
+.basket.bad{animation:shake .35s; border-color:var(--rojo)}
+.tword{display:inline-block; background:var(--amarillo); border:2px solid var(--negro); border-radius:7px; padding:1px 7px; font-family:var(--titulo); font-size:.78rem; margin:2px}
+.tword.ex{background:#fff; color:var(--azul)}
+.tword.bad{background:#FFB3B3; animation:shake .35s}
+.tablewrap{overflow-x:auto}
+.adjtable{width:100%; border-collapse:collapse; background:#fff; border:3px solid var(--negro); table-layout:fixed; min-width:430px}
+.adjtable th{background:#4FB3BF; color:var(--negro); font-family:var(--titulo); font-size:.78rem; padding:6px 4px; border:2px solid var(--negro)}
+.adjtable td{border:2px solid var(--negro); vertical-align:top; padding:0}
+.tcell{min-height:130px; padding:4px; cursor:pointer; text-align:center}
+.tcell:hover{background:#FFF6CC}
+.tcell.locked{cursor:default; background:#E4FBD2}
+.tcell .plus{display:block; font-family:var(--titulo); color:var(--gris); font-size:1.2rem}
+.tf{background:#fff; border:var(--linea); border-radius:14px; padding:10px 12px; box-shadow:var(--sombra-chica); margin-bottom:12px}
+.tf p{margin:0; font-size:1.05rem}
+.tf.done{background:#F4FFEC}
+.tbtn{border:3px solid var(--negro); border-radius:10px; padding:4px 16px; font-family:var(--titulo); box-shadow:3px 3px 0 var(--negro); color:#fff; text-transform:uppercase; font-size:.85rem}
+.tbtn.t{background:var(--verde)} .tbtn.f{background:var(--azul)}
+.tbtn.bad{animation:shake .35s; background:#999; text-decoration:line-through}
+.tfa{margin-top:6px; font-family:var(--mano)}
+.tfa .tag{font-family:var(--titulo); color:#fff; border:2px solid var(--negro); border-radius:6px; padding:0 6px; font-size:.8rem}
+.tfa .tag.t{background:var(--verde)} .tfa .tag.f{background:var(--rojo)}
+
 footer{text-align:center; padding:14px 10px 22px; font-family:var(--titulo); font-size:.85rem; letter-spacing:.5px}
 footer span{background:var(--crema); border:3px solid var(--negro); border-radius:10px; padding:4px 12px; display:inline-block}
 
@@ -301,10 +346,23 @@ footer span{background:var(--crema); border:3px solid var(--negro); border-radiu
 var M = 'media/';
 
 /* =========================================================
-   DATA: las paradas del viaje. Todo el texto visible en ingles.
-   gaps: oraciones con ___ y sus respuestas en orden.
-   extras: palabras distractoras del word box.
+   DATA - adaptado al libro: Cambridge Global English,
+   unidad 2 "Earth and beyond": 2.1 Planet Earth (adjetivos del
+   word box + Language detective: comparatives) y 2.3 Natural
+   miracles (northern lights, rainbow, sunset...).
+   gaps: oraciones con ___ y respuestas en orden (word box).
+   cmp: comparativos; rule = er | r | ier | double | more.
    ========================================================= */
+var BOOK_ADJ = ['long','high','hot','freezing','icy','dry','huge','wide','wet','beautiful','humid','cool','warm'];
+
+var RULES = {
+  er:     'Short adjectives add –er: old → older.',
+  r:      'Adjectives ending in –e add –r: wide → wider.',
+  ier:    'Adjectives ending in –y change to –ier: dry → drier.',
+  double: 'Double letters: hot → hotter.',
+  more:   'Long adjectives use more: more dangerous.'
+};
+
 var STOPS = [
   { id:'volcano', name:'Volcanic land', color:'#E0592A', pin:[138,272],
     media:[
@@ -312,16 +370,18 @@ var STOPS = [
       {img:'p1390.jpg', place:'Eldfell', cap:'The volcano is red and brown.'},
       {img:'p1405.jpg', place:'Eldfell', cap:'Red rocks, and the sea far away.'},
       {img:'p1402.jpg', place:'Eldfell', cap:'Old lava rocks. Look at the colours!'},
-      {img:'p0147.jpg', place:'Lava field', cap:'A big field of black lava.'},
+      {img:'p0147.jpg', place:'Lava field', cap:'A huge field of black lava.'},
       {img:'volcano-rift.jpg', place:'Thingvellir', cap:'Balancing on old lava rocks.'}
     ],
-    story:'Iceland is a land of volcanoes! The ground is black, red and brown because it is made of old lava. We climbed an inactive volcano. Inactive means it is sleeping, so there was no fire. Phew!',
-    gaps:[ {s:'We ___ an inactive volcano.', a:['climbed']},
-           {s:'The black rocks are old ___.', a:['lava']} ],
-    extras:['swam','snow'],
-    build:'The volcano is red and brown.',
-    starters:['I can see','The rocks are','Dan is standing on'],
-    words:['volcano','rocks','red','black','sea','town','sky']
+    story:'Iceland is a land of volcanoes! The ground is dry and black because it is made of old lava. We climbed Eldfell, an inactive volcano. It is a young volcano: it erupted in 1973. Today it is sleeping. Phew! It is higher than the town, so you can see everything from the top.',
+    gaps:[ {s:'The ground is ___ and black.', a:['dry']},
+           {s:'The lava field is ___: it is very, very big!', a:['huge']} ],
+    extras:['wet','freezing'],
+    cmp:[ {s:'Eldfell is ___ than my house.', adj:'high', a:'higher', bad:['highher','more high'], rule:'er'},
+          {s:'The lava field is ___ than the beach.', adj:'dry', a:'drier', bad:['dryier','more dry'], rule:'ier'} ],
+    build:'The volcano is higher than the town.',
+    starters:['The volcano is','higher than','drier than','bigger than'],
+    words:['volcano','rocks','lava','dry','huge','town','sea']
   },
   { id:'waterfalls', name:'Waterfalls', color:'#2D7DD2', pin:[157,246],
     media:[
@@ -329,15 +389,17 @@ var STOPS = [
       {img:'p0517.jpg', place:'Seljalandsfoss', cap:'I walked behind a waterfall!'},
       {img:'p0418.jpg', place:'Gullfoss', cap:'A huge, wide waterfall. Viking pose!'},
       {img:'p6465.jpg', place:'Thingvellir', cap:'A waterfall between big rocks.'},
-      {vid:'v0777.mp4', poster:'v0777.jpg', place:'Fjadrargljufur', cap:'A waterfall in a deep green canyon.'}
+      {vid:'v0777.mp4', poster:'v0777.jpg', place:'Fjadrargljufur', cap:'A waterfall in a long, deep canyon.'}
     ],
-    story:'Iceland has hundreds of waterfalls. Some are tall, some are wide and some are very, very loud! I walked behind one waterfall and I got wet. Then I opened my mouth and tried to eat a waterfall. The water was really cold!',
-    gaps:[ {s:'I walked ___ a waterfall.', a:['behind']},
-           {s:'I tried to ___ the waterfall!', a:['eat']} ],
-    extras:['tall','loud'],
-    build:'I tried to eat the waterfall.',
-    starters:['I can see','The waterfall is','Dan is'],
-    words:['waterfall','tall','wide','water','wet','rocks','canyon']
+    story:'Iceland has hundreds of waterfalls. Some are high, some are wide and some are very loud! Gullfoss is wider than Seljalandsfoss, but Seljalandsfoss is more fun: I walked behind it and I got wet. Then I tried to eat a waterfall. The water was freezing!',
+    gaps:[ {s:'I walked behind the waterfall and I got ___.', a:['wet']},
+           {s:'The water was ___!', a:['freezing']} ],
+    extras:['dry','hot'],
+    cmp:[ {s:'Gullfoss is ___ than Seljalandsfoss.', adj:'wide', a:'wider', bad:['wideer','more wide'], rule:'r'},
+          {s:'After the waterfall, I was ___ than a fish!', adj:'wet', a:'wetter', bad:['weter','more wet'], rule:'double'} ],
+    build:'Gullfoss is wider than Seljalandsfoss.',
+    starters:['The waterfall is','wider than','higher than','wetter than'],
+    words:['waterfall','high','wide','wet','freezing','rocks','canyon']
   },
   { id:'rainbows', name:'Double rainbows', color:'#7B3FF2', pin:[173,254],
     media:[
@@ -345,120 +407,138 @@ var STOPS = [
       {img:'p6994.jpg', place:'Skogafoss', cap:'Standing under the rainbow.'},
       {img:'p0603.jpg', place:'Skogafoss', cap:'We met a monk at the waterfall!'}
     ],
-    story:'At Skógafoss the sun was shining and the waterfall made lots of tiny drops of water. Then we saw it: not one rainbow... a DOUBLE rainbow! Rainbows happen when there is sunshine and water in the air. My mum and I were so happy!',
-    gaps:[ {s:'A double rainbow has ___ rainbows.', a:['two']},
-           {s:'Rainbows happen when there is ___ and water.', a:['sunshine']} ],
-    extras:['three','snow'],
-    build:'There are two rainbows in the sky.',
-    starters:['I can see','There are','Dan and his mum are'],
-    words:['rainbow','two','colours','waterfall','happy','sunny','mum']
+    story:'At Skógafoss there was lots of sunshine, and the waterfall made lots of tiny drops of water. Then we saw it: a DOUBLE rainbow! Rainbows happen when there is sunshine straight after rain... or next to a huge waterfall! Skógafoss is 60 metres high. It is higher than a building with 20 floors!',
+    gaps:[ {s:'Rainbows happen when there is ___ straight after rain.', a:['sunshine']},
+           {s:'Skógafoss is a ___ waterfall.', a:['beautiful']} ],
+    extras:['lightning','dry'],
+    cmp:[ {s:'The first rainbow was ___ than the second rainbow.', adj:'bright', a:'brighter', bad:['brightter','more bright'], rule:'er'},
+          {s:'This photo is ___ than my school photo!', adj:'beautiful', a:'more beautiful', bad:['beautifuler','beautifuller'], rule:'more'} ],
+    build:'Skógafoss is higher than my school.',
+    starters:['The rainbow is','There are two','brighter than','more beautiful than'],
+    words:['rainbow','sunshine','waterfall','high','beautiful','mum','two']
   },
   { id:'geysers', name:'Geysers', color:'#00A6B0', pin:[156,184],
     media:[
       {vid:'v0328.mp4', poster:'v0328.jpg', place:'Strokkur', cap:'Wait for it... WHOOSH!'},
       {vid:'v0320.mp4', poster:'v0320.jpg', place:'Geysir', cap:'Bubbling water and steam everywhere!'}
     ],
-    story:'A geyser is a hole in the ground with very hot water. We waited and waited next to the geyser. Then... WHOOSH! The water jumped high into the sky! There was a big white cloud of steam. Watch the videos!',
+    story:'A geyser is a hole in the ground with very hot water. Strokkur erupts very often: every few minutes! We waited and waited... and then WHOOSH! The water jumped high into the sky. The air was warm and humid because of the steam.',
     gaps:[ {s:'The water in a geyser is very ___.', a:['hot']},
-           {s:'There was a big cloud of ___.', a:['steam']} ],
-    extras:['cold','sand'],
-    build:'The hot water jumped into the sky.',
-    starters:['I can see','The water is','The geyser is'],
-    words:['geyser','hot','water','steam','sky','high','people']
+           {s:'The air was warm and ___ because of the steam.', a:['humid']} ],
+    extras:['icy','dry'],
+    cmp:[ {s:'Geyser water is ___ than a cup of tea.', adj:'hot', a:'hotter', bad:['hoter','more hot'], rule:'double'},
+          {s:'The air near the geyser is ___ than the air on the volcano.', adj:'humid', a:'more humid', bad:['humider','humidder'], rule:'more'} ],
+    build:'The geyser is hotter than the river.',
+    starters:['The geyser is','The water is','hotter than','more humid than'],
+    words:['geyser','hot','water','steam','humid','warm','sky']
   },
   { id:'turquoise', name:'Turquoise water', color:'#00C2CB', pin:[126,202],
     media:[
       {vid:'v0251.mp4', poster:'v0251.jpg', place:'Bruarfoss', cap:'The bluest river ever!'},
       {img:'p6538.jpg', place:'Bruarfoss', cap:'Waving from the bridge.'}
     ],
-    story:'Look at this river! The water is not blue and it is not green. It is turquoise! It is very clear and it runs very fast. I stood on a little wooden bridge and waved to my mum.',
-    gaps:[ {s:'The water is ___.', a:['turquoise']},
+    story:'Look at this river! It is not blue and it is not green: it is turquoise! Brúarfoss is smaller than Gullfoss, but its water is more colourful. The water was cool and very fast. I stood on a little wooden bridge and waved to my mum.',
+    gaps:[ {s:'The water was ___ and very fast.', a:['cool']},
            {s:'I stood on a wooden ___.', a:['bridge']} ],
-    extras:['brown','boat'],
-    build:'The river is turquoise and very fast.',
-    starters:['I can see','The river is','Dan is waving from'],
-    words:['river','turquoise','fast','clear','bridge','rocks','waterfall']
+    extras:['humid','boat'],
+    cmp:[ {s:'Brúarfoss is ___ than Gullfoss.', adj:'small', a:'smaller', bad:['smalller','more small'], rule:'er'},
+          {s:'This water is ___ than the water in my bath!', adj:'colourful', a:'more colourful', bad:['colourfuler','colourfuller'], rule:'more'} ],
+    build:'This river is more colourful than my pool.',
+    starters:['The river is','The water is','faster than','more colourful than'],
+    words:['river','turquoise','cool','fast','bridge','rocks','waterfall']
   },
   { id:'diamond', name:'Diamond Beach', color:'#3B3B3B', pin:[300,226],
     media:[
       {img:'p7466.jpg', place:'Diamond Beach', cap:'Look! It’s Argentina! I’m showing it where home is.'},
       {img:'p7483.jpg', place:'Diamond Beach', cap:'Catch the ice!'}
     ],
-    story:'Diamond Beach has black sand and giant pieces of ice. The ice shines like diamonds! I found a piece of ice with the shape of Argentina. I showed it where Argentina is: far, far away in the south! Then I threw some ice into the air.',
-    gaps:[ {s:'The sand on Diamond Beach is ___.', a:['black']},
-           {s:'The ice has the shape of ___.', a:['Argentina']} ],
-    extras:['yellow','Brazil'],
-    build:'I found ice with the shape of Argentina.',
-    starters:['I can see','The ice is','Dan is throwing'],
-    words:['beach','black','sand','ice','sea','Argentina','cloudy']
+    story:'Diamond Beach has black sand and huge pieces of ice. The ice is freezing and it shines like diamonds! I found a piece of ice with the shape of Argentina. Argentina is much bigger than Iceland, so I showed the ice where home is: far, far away in the south!',
+    gaps:[ {s:'Diamond Beach has black sand and ___ pieces of ice.', a:['huge']},
+           {s:'The ice is ___.', a:['freezing']} ],
+    extras:['hot','humid'],
+    cmp:[ {s:'Argentina is ___ than Iceland.', adj:'big', a:'bigger', bad:['biger','more big'], rule:'double'},
+          {s:'The ice is ___ than the sand.', adj:'cold', a:'colder', bad:['coldder','more cold'], rule:'er'} ],
+    build:'Argentina is bigger than Iceland.',
+    starters:['The ice is','The sand is','colder than','bigger than'],
+    words:['beach','black','sand','ice','freezing','huge','Argentina']
   },
   { id:'icebergs', name:'Icebergs & seals', color:'#3FA9F5', pin:[276,202],
     media:[
-      {img:'p1004.jpg', place:'Jokulsarlon', cap:'Me and a giant iceberg. Brrr!'},
+      {img:'p1004.jpg', place:'Jokulsarlon', cap:'Me and a huge iceberg. Brrr!'},
       {vid:'v1091.mp4', poster:'v1091.jpg', place:'Jokulsarlon', cap:'Icebergs floating in the lagoon.'}
     ],
-    story:'Next to Diamond Beach there is a lagoon full of icebergs. Some icebergs are as big as a house! They are white and bright blue. Seals were swimming near the icebergs. It was very cold, so I wore my hat.',
-    gaps:[ {s:'___ are big pieces of ice in the water.', a:['Icebergs']},
-           {s:'___ were swimming near the icebergs.', a:['Seals']} ],
-    extras:['Penguins','Volcanoes'],
-    build:'The icebergs are white and blue.',
-    starters:['I can see','The iceberg is','Dan is wearing'],
-    words:['iceberg','seal','blue','white','cold','hat','floating']
+    story:'Next to Diamond Beach there is a lagoon full of icebergs. Some icebergs are larger than a house! An iceberg is bigger under the water than above the water. Seals were swimming near the icebergs. It was icy and freezing, so I wore my hat.',
+    gaps:[ {s:'The lagoon is full of ___.', a:['icebergs']},
+           {s:'Some ___ were swimming near the icebergs.', a:['seals']} ],
+    extras:['penguins','camels'],
+    cmp:[ {s:'This iceberg is ___ than a house.', adj:'large', a:'larger', bad:['largeer','more large'], rule:'r'},
+          {s:'The lagoon is ___ than my freezer!', adj:'icy', a:'icier', bad:['icyer','more icy'], rule:'ier'} ],
+    build:'The iceberg is larger than a house.',
+    starters:['The iceberg is','The water is','larger than','icier than'],
+    words:['iceberg','seals','icy','freezing','huge','blue','hat']
   },
   { id:'sunsets', name:'Sunsets', color:'#FF7A1A', pin:[180,276],
     media:[
-      {img:'p0443.jpg', place:'South Iceland', cap:'The sun goes down over the rocks.'},
+      {img:'p0443.jpg', place:'South Iceland', cap:'The Sun goes down over the rocks.'},
       {img:'p0729.jpg', place:'Black beach', cap:'A pink and orange sky on a black beach.'}
     ],
-    story:'In Iceland the sunsets are long and beautiful. The sun goes down slowly at the end of the day. The sky turned orange, pink and yellow. We sat on the beach and watched the colours.',
-    gaps:[ {s:'A sunset happens when the Sun goes ___ at the end of the day.', a:['down']},
-           {s:'The sky turned orange and ___.', a:['pink']} ],
-    extras:['up','green'],
-    build:'The sun goes down at the end of the day.',
-    starters:['I can see','The sky is','The sun is'],
-    words:['sunset','sun','sky','orange','pink','clouds','beach']
+    story:'In Iceland the sunsets are long and beautiful. Sunsets happen when the Sun goes down at the end of the day. The sky turned orange, pink and yellow. In summer, the days in Iceland are longer than the days in Buenos Aires!',
+    gaps:[ {s:'Sunsets happen when the Sun goes ___ at the end of the day.', a:['down']},
+           {s:'In Iceland the sunsets are long and ___.', a:['beautiful']} ],
+    extras:['up','humid'],
+    cmp:[ {s:'In summer, the days in Iceland are ___ than in Buenos Aires.', adj:'long', a:'longer', bad:['longger','more long'], rule:'er'},
+          {s:'An orange sky is ___ than a grey sky.', adj:'pretty', a:'prettier', bad:['prettyer','more pretty'], rule:'ier'} ],
+    build:'The sunset was more beautiful than a painting.',
+    starters:['The sky is','The sunset is','longer than','prettier than'],
+    words:['sunset','Sun','sky','orange','pink','beautiful','beach']
   },
   { id:'rocks', name:'Strange rocks', color:'#8C7A5B', pin:[208,258],
     media:[
       {img:'p7172.jpg', place:'Reynisfjara', cap:'My giant rock chair!'}
     ],
-    story:'On a black beach we found very strange rocks. They look like giant pencils or a big staircase! A long time ago, hot lava cooled down and made these shapes. You can sit on them, so I climbed up and sat like a king.',
-    gaps:[ {s:'The rocks look like a big ___.', a:['staircase']},
-           {s:'I climbed up and ___ on the rocks.', a:['sat']} ],
-    extras:['car','swam'],
-    build:'I sat on the strange rocks.',
-    starters:['I can see','The rocks look like','Dan is sitting on'],
-    words:['rocks','strange','grey','tall','beach','sky','king']
+    story:'On a black beach we found very strange rocks. They look like giant pencils or a big staircase! A long time ago, hot lava cooled down and made these shapes. The rocks are taller than a house, so I climbed up and sat like a king. Be careful: the waves on this beach are huge!',
+    gaps:[ {s:'Hot lava cooled down and made these ___.', a:['shapes']},
+           {s:'The waves on this beach are ___!', a:['huge']} ],
+    extras:['rainbows','warm'],
+    cmp:[ {s:'The rocks are ___ than me.', adj:'tall', a:'taller', bad:['talller','more tall'], rule:'er'},
+          {s:'This beach is ___ than the beaches in Argentina.', adj:'dangerous', a:'more dangerous', bad:['dangerouser','dangerousser'], rule:'more'} ],
+    build:'The rocks are taller than Dan.',
+    starters:['The rocks are','The beach is','taller than','more dangerous than'],
+    words:['rocks','strange','tall','huge','waves','beach','king']
   },
   { id:'viking', name:'Viking ship', color:'#B3121B', pin:[327,197],
     media:[
       {img:'p1174.jpg', place:'Stokksnes', cap:'Captain Dan on the Viking ship!'},
       {img:'p1175.jpg', place:'Stokksnes', cap:'Look at the round shields!'}
     ],
-    story:'The Vikings lived in Iceland a long time ago. They sailed on long wooden ships with round shields on the sides. We travelled on a Viking ship through the fjords! A fjord is a long arm of sea between tall mountains. I stood at the front like a real Viking!',
+    story:'The Vikings lived in Iceland a long time ago. They sailed on long wooden ships with round shields on the sides. We travelled on a Viking ship through the fjords! A fjord is a long arm of sea between high mountains. The mountains were so high that their tops were in the clouds!',
     gaps:[ {s:'The ship has round ___ on the side.', a:['shields']},
-           {s:'A fjord has tall ___ on both sides.', a:['mountains']} ],
-    extras:['wheels','trees'],
-    build:'We travelled on a Viking ship.',
-    starters:['I can see','The ship is','Dan is standing on'],
-    words:['Viking','ship','shields','mountains','clouds','houses','wooden']
+           {s:'A fjord is a long arm of sea between ___ mountains.', a:['high']} ],
+    extras:['wheels','dry'],
+    cmp:[ {s:'A Viking ship is ___ than a car.', adj:'heavy', a:'heavier', bad:['heavyer','more heavy'], rule:'ier'},
+          {s:'The Viking story is ___ than my grandfather!', adj:'old', a:'older', bad:['oldder','more old'], rule:'er'} ],
+    build:'A Viking ship is heavier than a car.',
+    starters:['The ship is','The mountains are','older than','longer than'],
+    words:['Viking','ship','shields','mountains','high','clouds','wooden']
   },
   { id:'aurora', name:'Northern lights', color:'#16C060', pin:[200,60],
     media:[
       {img:'p1721.jpg', place:'Iceland at night', cap:'FINALLY! The sky is dancing!'},
       {img:'p1722.jpg', place:'Iceland at night', cap:'Green lights everywhere!'}
     ],
-    story:'Every night, my mum and I looked up at the sky. We waited and waited... and one night, finally, we saw them: the NORTHERN LIGHTS! The sky was bright green and the lights were dancing. Northern lights appear at night, but they are caused by activity from the Sun.',
-    gaps:[ {s:'The northern lights were bright ___.', a:['green']},
-           {s:'Northern lights appear at ___.', a:['night']} ],
-    extras:['orange','lunchtime'],
-    build:'Finally we saw the northern lights.',
-    starters:['I can see','The sky is','The lights are'],
-    words:['northern lights','green','night','stars','sky','mountains','dancing']
+    story:'Every night we looked up at the sky. The nights were cool and dark. One night, finally, we saw them: the NORTHERN LIGHTS! The sky was green and the lights were dancing. Northern lights appear at night but they are caused by activity from the Sun.',
+    gaps:[ {s:'Northern lights appear at ___ but they are caused by activity from the Sun.', a:['night']},
+           {s:'You can see northern lights more easily in places where there are no city ___.', a:['lights']} ],
+    extras:['lunchtime','rainbows'],
+    cmp:[ {s:'The sky in Iceland was ___ than the sky in Buenos Aires.', adj:'dark', a:'darker', bad:['darkker','more dark'], rule:'er'},
+          {s:'The northern lights are ___ than fireworks!', adj:'amazing', a:'more amazing', bad:['amazinger','amazingger'], rule:'more'} ],
+    build:'The northern lights are more beautiful than fireworks.',
+    starters:['The sky is','The lights are','darker than','more beautiful than'],
+    words:['northern lights','green','night','sky','cool','dark','mountains']
   }
 ];
 
-/* Actividad 1 del libro: unir palabras con fotos */
+/* 2.3 Activity 1: unir palabras con fotos */
 var MATCH = [
   {w:'volcano', img:'p1390.jpg'}, {w:'waterfall', img:'v0777.jpg'},
   {w:'rainbow', img:'p6938.jpg'}, {w:'geyser', img:'v0328.jpg'},
@@ -466,40 +546,82 @@ var MATCH = [
   {w:'northern lights', img:'p1722.jpg'}, {w:'Viking ship', img:'p1174.jpg'}
 ];
 
-/* Actividad 3 del libro: que foto describe Dan */
+/* 2.1 Activity 2: adjetivos del word box en la tabla de paisajes.
+   ok = adjetivos que se aceptan en esa columna; ex = ejemplo ya puesto. */
+var TABLE = [
+  {k:'volcano', h:'The volcano', img:'p1390.jpg', ex:'dry', ok:['dry','high','huge','wide','beautiful','cool']},
+  {k:'geyser', h:'The geyser', img:'v0328.jpg', ex:'hot', ok:['hot','warm','wet','humid','high','beautiful']},
+  {k:'lagoon', h:'The iceberg lagoon', img:'p1004.jpg', ex:'icy', ok:['icy','freezing','cool','huge','wide','wet','beautiful']},
+  {k:'waterfall', h:'The waterfall', img:'p6938.jpg', ex:'high', ok:['high','wet','wide','long','huge','cool','freezing','beautiful']}
+];
+
+/* Language detective: clasificar adjetivos segun la regla */
+var SORT = [
+  {w:'old',r:'er'},{w:'long',r:'er'},{w:'high',r:'er'},
+  {w:'wide',r:'r'},{w:'large',r:'r'},{w:'nice',r:'r'},
+  {w:'dry',r:'ier'},{w:'icy',r:'ier'},{w:'heavy',r:'ier'},
+  {w:'hot',r:'double'},{w:'big',r:'double'},{w:'wet',r:'double'},
+  {w:'beautiful',r:'more'},{w:'dangerous',r:'more'},{w:'humid',r:'more'}
+];
+var BASKETS = [
+  {r:'er', t:'+ er', ex:'old → older'},
+  {r:'r', t:'–e + r', ex:'wide → wider'},
+  {r:'ier', t:'y → ier', ex:'dry → drier'},
+  {r:'double', t:'double + er', ex:'hot → hotter'},
+  {r:'more', t:'more + ...', ex:'more dangerous'}
+];
+
+/* 2.3 Activity 3: que foto describe Dan */
 var RIDDLES = [
-  {q:'It is very hot water. It jumps out of the ground and into the sky. WHOOSH!', img:'v0328.jpg'},
-  {q:'They are green and they dance in the sky at night.', img:'p1721.jpg'},
-  {q:'There are two of them and they have lots of colours.', img:'p6938.jpg'},
-  {q:'It is big, white and blue, and it floats in the water.', img:'p1004.jpg'},
-  {q:'It is long and wooden, and it has round shields on the side.', img:'p1174.jpg'},
-  {q:'The sky is orange and the Sun is going down.', img:'p0443.jpg'}
+  {q:'Its water is hotter than a cup of tea. It jumps out of the ground. WHOOSH!', img:'v0328.jpg'},
+  {q:'They appear at night but they are caused by activity from the Sun.', img:'p1721.jpg'},
+  {q:'It happens when there is sunshine straight after rain. In this photo there are two!', img:'p6938.jpg'},
+  {q:'It is larger than a house, and it is bigger under the water than above it.', img:'p1004.jpg'},
+  {q:'It is longer than a bus and it has round shields on the side.', img:'p1174.jpg'},
+  {q:'It happens when the Sun goes down at the end of the day.', img:'p0443.jpg'}
+];
+
+/* 2.1 Activity 6: true / false quiz */
+var TF = [
+  {s:'Iceland is bigger than Argentina.', a:false, why:'Argentina is much bigger than Iceland: about 27 times bigger!'},
+  {s:'The water in a geyser is hotter than the water in the iceberg lagoon.', a:true, why:'Geyser water is very hot. The lagoon is freezing!'},
+  {s:'In summer, the nights in Iceland are longer than the nights in Buenos Aires.', a:false, why:'In summer the nights in Iceland are shorter. The days are longer!'},
+  {s:'An iceberg is smaller under the water than above the water.', a:false, why:'The biggest part of an iceberg is under the water.'},
+  {s:'Iceland is colder than Buenos Aires.', a:true, why:'Iceland is near the Arctic, so it is colder.'},
+  {s:'The sand on Diamond Beach is whiter than snow.', a:false, why:'The sand on Diamond Beach is black: it is made of volcanic rock.'},
+  {s:'Skógafoss is higher than Dan.', a:true, why:'Skógafoss is 60 metres high. Dan is not!'},
+  {s:'A Viking ship is shorter than a skateboard.', a:false, why:'Viking ships are long: longer than a bus!'}
 ];
 
 /* =========================================================
    ENGINE
    ========================================================= */
-var KEY = 'dan-journey-v1';
+var KEY = 'dan-journey-v2';
 var st = load();
 function load(){
   var d = null;
   try { d = JSON.parse(localStorage.getItem(KEY)); } catch(e){}
   d = d || {};
-  d.stops = d.stops || {}; d.match = d.match || {}; d.riddles = d.riddles || {}; d.page = d.page || 0;
+  d.stops = d.stops || {}; d.match = d.match || {}; d.riddles = d.riddles || {};
+  d.table = d.table || null; d.tableOk = !!d.tableOk; d.sort = d.sort || {}; d.tf = d.tf || {}; d.tfw = d.tfw || '';
+  d.page = d.page || 0;
   return d;
 }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} }
-function S(id){ return st.stops[id] || (st.stops[id] = {a:false,b:false,w:''}); }
+function S(id){ var x = st.stops[id] || (st.stops[id] = {a:false,c:{},b:false,w:''}); x.c = x.c || {}; return x; }
 
 function shuffle(a){ for (var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function rot(i){ return ((i*37)%7 - 3) * 0.8 + 'deg'; }
-function stopDone(s){ var x = st.stops[s.id]; return !!(x && x.a && x.b && x.w); }
+function cmpDone(s){ var x = st.stops[s.id]; return !!(x && x.c && s.cmp.every(function(q,i){ return x.c[i]; })); }
+function stopDone(s){ var x = st.stops[s.id]; return !!(x && x.a && cmpDone(s) && x.b && x.w); }
 
-/* paginas del libro: portada, ruta, calentamiento, 11 paradas, adivinanzas, diario */
-var PAGES = [{t:'cover'},{t:'route'},{t:'match'}];
+/* paginas: portada, ruta, 2.3 vocabulario, 2.1 tabla de adjetivos,
+   language detective, 11 paradas, adivinanzas, true/false, diario */
+var PAGES = [{t:'cover'},{t:'route'},{t:'match'},{t:'table'},{t:'detective'}];
+var STOP0 = PAGES.length;
 STOPS.forEach(function(s,i){ PAGES.push({t:'stop', i:i}); });
-PAGES.push({t:'riddles'}); PAGES.push({t:'journal'});
+PAGES.push({t:'riddles'}); PAGES.push({t:'tf'}); PAGES.push({t:'journal'});
 var cur = Math.min(st.page, PAGES.length-1);
 /* #p5 en la URL abre directo esa pagina (sirve para mandar el link de una parada) */
 var hm = /^#p(\d+)$/.exec(location.hash); if (hm) cur = Math.min(+hm[1], PAGES.length-1);
@@ -509,24 +631,21 @@ var book = document.getElementById('book');
 
 /* estado efimero de los ejercicios de la pagina abierta */
 var live = {};
+var PAGE_COLOR = {cover:'#1B4F8C', route:'#FFD23F', match:'#FF3D7F', table:'#FF7A1A', detective:'#1C7FB0', riddles:'#7B3FF2', tf:'#16C060', journal:'#00C2CB'};
+var PAGE_NAME = {cover:'Cover', route:'Our route', match:'Natural events', table:'Landscapes', detective:'Language detective', riddles:'Guess the photo', tf:'True or false?', journal:'My journal'};
 
 function render(){
   var p = PAGES[cur];
   live = {};
-  var color = p.t==='stop' ? STOPS[p.i].color : ({cover:'#1B4F8C', route:'#FFD23F', match:'#FF3D7F', riddles:'#7B3FF2', journal:'#00C2CB'})[p.t];
-  book.style.setProperty('--c', color);
-  if (p.t==='cover') renderCover();
-  else if (p.t==='route') renderRoute();
-  else if (p.t==='match') renderMatch();
-  else if (p.t==='stop') renderStop(STOPS[p.i]);
-  else if (p.t==='riddles') renderRiddles();
-  else renderJournal();
+  book.style.setProperty('--c', p.t==='stop' ? STOPS[p.i].color : PAGE_COLOR[p.t]);
+  ({cover:renderCover, route:renderRoute, match:renderMatch, table:renderTable, detective:renderDetective,
+    riddles:renderRiddles, tf:renderTF, journal:renderJournal}[p.t] || function(){ renderStop(STOPS[p.i]); })();
   pL.insertAdjacentHTML('beforeend','<span class="pnum">'+(cur*2+1)+'</span>');
   pR.insertAdjacentHTML('beforeend','<span class="pnum">'+(cur*2+2)+'</span>');
   pL.classList.toggle('cover-left', p.t==='cover');
   document.getElementById('prev').disabled = cur===0;
   document.getElementById('next').disabled = cur===PAGES.length-1;
-  var label = p.t==='stop' ? 'Stop '+(p.i+1)+' of '+STOPS.length : ({cover:'Cover', route:'Our route', match:'Warm-up', riddles:'Guess the photo', journal:'My journal'})[p.t];
+  var label = p.t==='stop' ? 'Stop '+(p.i+1)+' of '+STOPS.length : PAGE_NAME[p.t];
   document.getElementById('where').textContent = label + '  ·  ' + (cur+1) + '/' + PAGES.length;
   renderShields();
   st.page = cur; save();
@@ -536,7 +655,7 @@ function render(){
 function renderShields(){
   var h = '<span class="lbl">Viking shields: '+STOPS.filter(stopDone).length+'/'+STOPS.length+'</span>';
   STOPS.forEach(function(s,i){
-    h += '<button class="shield'+(stopDone(s)?' done':'')+'" data-go="'+(i+3)+'" title="Stop '+(i+1)+': '+esc(s.name)+'"><span>'+(i+1)+'</span></button>';
+    h += '<button class="shield'+(stopDone(s)?' done':'')+'" data-go="'+(STOP0+i)+'" title="Stop '+(i+1)+': '+esc(s.name)+'"><span>'+(i+1)+'</span></button>';
   });
   document.getElementById('shields').innerHTML = h;
 }
@@ -566,21 +685,21 @@ var SHIP_SVG =
 
 function renderCover(){
   pL.innerHTML =
-    '<span class="label" style="transform:rotate(-3deg)">English 1 · Travel flipbook</span>'+
+    '<span class="label" style="transform:rotate(-3deg)">2 Earth and beyond · Travel flipbook</span>'+
     '<h2 class="sticker" style="margin-top:16px">Dan’s trip<br>to Iceland</h2>'+
     SHIP_SVG+
     '<div class="hand by" style="color:#fff;font-size:1.15rem">A photo-journey by Dan (and his mum!)</div>'+
     '<button class="btn bigbtn" data-go="1">Open the book &#9654;</button>';
   pR.innerHTML =
     '<div class="tape" style="top:-6px;right:40px;transform:rotate(6deg)"></div>'+
-    '<div class="story"><b class="who">Dan says:</b>Hi! I’m Dan. My mum and I travelled to Iceland. We wanted to see the <b>northern lights</b>! On the way, we found lots of natural miracles: volcanoes, waterfalls, geysers, icebergs... Turn the pages and come on the journey with us!</div>'+
-    '<div class="goal"><div class="t">We are going to...</div><ul><li>describe natural places and events.</li><li>write our own sentences about photos and videos.</li></ul></div>'+
+    '<div class="story"><b class="who">Dan says:</b>Hi! I’m Dan. My mum and I travelled to Iceland. We wanted to see the <b>northern lights</b>! On the way, we found lots of nature wonders: volcanoes, waterfalls, geysers, icebergs... Iceland is colder than Argentina, but it is more surprising than you think! Turn the pages and come on the journey with us!</div>'+
+    '<div class="goal"><div class="t">We are going to...</div><ul><li>compare Earth’s natural landscapes.</li><li>describe natural events.</li><li>use comparatives: <b>hotter, wider, drier, more beautiful</b>.</li></ul></div>'+
     '<h3 style="text-transform:uppercase;margin-bottom:6px">How it works</h3>'+
     '<ul class="howto">'+
     '<li><span class="dot" style="background:var(--rojo)">1</span><span>Look at the photos and <b>watch the videos</b> on the left page.</span></li>'+
     '<li><span class="dot" style="background:var(--azul)">2</span><span>Read Dan’s story and <b>complete the sentences</b> with the words in the box.</span></li>'+
-    '<li><span class="dot" style="background:var(--violeta)">3</span><span><b>Build a sentence</b> with the word tiles.</span></li>'+
-    '<li><span class="dot" style="background:var(--verde)">4</span><span><b>Write your own sentence</b> and stick it in your journal.</span></li>'+
+    '<li><span class="dot" style="background:var(--violeta)">3</span><span><b>Language detective:</b> choose the right comparative and build a sentence.</span></li>'+
+    '<li><span class="dot" style="background:var(--verde)">4</span><span><b>Write your own sentence</b> comparing two things and stick it in your journal.</span></li>'+
     '<li><span class="dot" style="background:var(--naranja)">★</span><span>Finish a stop and win a <b>Viking shield</b>!</span></li>'+
     '</ul>';
 }
@@ -590,8 +709,7 @@ var ICELAND = 'M65 232 L62 212 L80 214 L92 204 L85 190 L92 172 L71 152 L20 148 L
 function renderRoute(){
   var pins = '';
   STOPS.forEach(function(s,i){
-    var x = s.pin[0], y = s.pin[1];
-    pins += '<g class="pin" data-go="'+(i+3)+'" transform="translate('+x+' '+y+')"><title>'+esc(s.name)+'</title>'+
+    pins += '<g class="pin" data-go="'+(STOP0+i)+'" transform="translate('+s.pin[0]+' '+s.pin[1]+')"><title>'+esc(s.name)+'</title>'+
       '<circle r="11" fill="'+s.color+'" stroke="#141414" stroke-width="3"/>'+
       '<text y="4.5" text-anchor="middle" font-family="Arial Black,Arial" font-size="12" fill="#fff" stroke="#141414" stroke-width="2.5" paint-order="stroke">'+(i+1)+'</text></g>';
   });
@@ -612,16 +730,17 @@ function renderRoute(){
     '<p class="hand" style="text-align:center;color:#141414;font-size:1.05rem">Tap a pin to jump to that stop!</p>';
   var li = '';
   STOPS.forEach(function(s,i){
-    li += '<li><button data-go="'+(i+3)+'"><span class="num" style="background:'+s.color+'">'+(i+1)+'</span>'+esc(s.name)+
+    li += '<li><button data-go="'+(STOP0+i)+'"><span class="num" style="background:'+s.color+'">'+(i+1)+'</span>'+esc(s.name)+
       (stopDone(s)?'<span class="tick">✔</span>':'')+'</button></li>';
   });
   pR.innerHTML =
-    '<div class="story"><b class="who">Dan says:</b>We drove all around the south of Iceland. Every stop was a new surprise! The best surprise came at the very end...</div>'+
+    '<div class="story"><b class="who">Dan says:</b>We drove all around the south of Iceland. Every stop was more surprising than the one before! The best surprise came at the very end...</div>'+
     '<h3 style="text-transform:uppercase;margin-bottom:10px">The stops</h3>'+
-    '<ul class="stoplist">'+li+'</ul>';
+    '<ul class="stoplist">'+li+'</ul>'+
+    '<p class="hand" style="margin-top:12px">First do the three warm-up pages: <b>Natural events</b>, <b>Landscapes</b> and the <b>Language detective</b>.</p>';
 }
 
-/* ---------- calentamiento: unir palabras y fotos ---------- */
+/* ---------- 2.3 Activity 1: unir palabras y fotos ---------- */
 var matchOrder = null, wordOrder = null;
 function renderMatch(){
   if (!matchOrder){ matchOrder = shuffle(MATCH.slice()); wordOrder = shuffle(MATCH.map(function(m){return m.w;})); }
@@ -631,17 +750,89 @@ function renderMatch(){
     g += '<button class="ph'+(done?' good':'')+'" data-mimg="'+esc(m.w)+'" style="--r:'+rot(i)+'"><span class="let">'+'abcdefgh'[i]+'</span>'+
       '<img src="'+M+m.img+'" alt="Photo '+'abcdefgh'[i]+'" loading="lazy">'+(done?'<span class="stick">'+esc(m.w)+'</span>':'')+'</button>';
   });
-  pL.innerHTML = '<span class="label">Warm-up</span><h2 class="stopname sticker">Natural miracles</h2><div class="grid">'+g+'</div>';
+  pL.innerHTML = '<span class="label">Warm-up 1</span><h2 class="stopname sticker">Natural events</h2><div class="grid">'+g+'</div>';
   var w = '';
   wordOrder.forEach(function(x){ w += '<button class="chip'+(st.match[x]?' used':'')+'" data-mword="'+esc(x)+'">'+esc(x)+'</button>'; });
   var n = Object.keys(st.match).length;
   pR.innerHTML =
     '<div class="task"><h3><span class="n">1</span>Vocabulary</h3>'+
-    '<p style="margin-top:0">Which natural miracles have <b>you</b> seen? Where? <b>Match the words to the photos.</b><br><span class="hand">Tap a word, then tap its photo.</span></p>'+
+    '<p style="margin-top:0">Which natural events have you seen? Where? <b>Match the words to the photos.</b><br><span class="hand">Tap a word, then tap its photo.</span></p>'+
     '<div class="wordbox">'+w+'</div>'+
-    '<div class="fb" id="mfb">'+(n===MATCH.length?'Brilliant! All the photos have their names. Now open the next page!':n+' / '+MATCH.length+' matched')+'</div></div>'+
-    '<div class="story"><b class="who">Talk with a friend:</b>Which of these places would you like to visit? Why? <span class="hand">“I would like to see the ... because ...”</span></div>'+
+    '<div class="fb'+(n===MATCH.length?' yes':'')+'" id="mfb">'+(n===MATCH.length?'Brilliant! All the photos have their names. Now open the next page!':n+' / '+MATCH.length+' matched')+'</div></div>'+
+    '<div class="story"><b class="who">Talk with a friend:</b>Which of these nature wonders would you like to visit? Why? <span class="hand">“I would like to see the ... because ...”</span></div>'+
     (n?'<button class="btn ghost" data-reset="match">Start again</button>':'');
+}
+
+/* ---------- 2.1 Activity 2: adjetivos para describir paisajes ---------- */
+function tableState(){
+  if (!st.table){ st.table = {}; TABLE.forEach(function(c){ st.table[c.k] = [c.ex]; }); }
+  return st.table;
+}
+function renderTable(){
+  var t = tableState();
+  var g = '';
+  TABLE.forEach(function(c,i){
+    g += '<div class="ph" style="--r:'+rot(i)+'"><span class="let">'+'abcd'[i]+'</span><img src="'+M+c.img+'" alt="'+esc(c.h)+'"><span class="stick">'+esc(c.h)+'</span></div>';
+  });
+  pL.innerHTML = '<span class="label">Warm-up 2</span><h2 class="stopname sticker">Iceland’s landscapes</h2><div class="grid">'+g+'</div>';
+  var box = '';
+  BOOK_ADJ.forEach(function(a){ box += '<button class="chip'+(live.adj===a?' pick':'')+'" data-adj="'+a+'"'+(st.tableOk?' disabled':'')+'>'+a+'</button>'; });
+  var head = '', body = '';
+  TABLE.forEach(function(c){
+    head += '<th>'+esc(c.h)+'</th>';
+    var cell = '';
+    t[c.k].forEach(function(a,j){
+      var bad = live.tbad && live.tbad[c.k+'|'+a];
+      cell += '<button class="tword'+(bad?' bad':'')+(j===0?' ex':'')+'" data-tdel="'+c.k+'|'+a+'"'+(j===0||st.tableOk?' disabled':'')+'>'+a+'</button>';
+    });
+    body += '<td><div class="tcell'+(st.tableOk?' locked':'')+'" data-tcol="'+c.k+'">'+cell+(st.tableOk?'':'<span class="plus">+</span>')+'</div></td>';
+  });
+  pR.innerHTML =
+    '<div class="task"><h3><span class="n">2</span>Vocabulary'+(st.tableOk?'<span class="ok">Done!</span>':'')+'</h3>'+
+    '<p style="margin-top:0"><b>Choose the adjectives to describe these landscapes.</b> Put at least <b>three</b> in every column.<br><span class="hand">Tap an adjective, then tap a column. You can use a word more than once!</span></p>'+
+    '<div class="wordbox">'+box+'</div>'+
+    '<div class="tablewrap"><table class="adjtable"><thead><tr>'+head+'</tr></thead><tbody><tr>'+body+'</tr></tbody></table></div>'+
+    (st.tableOk ? '<div class="fb yes">Excellent! Great describing words.</div>' :
+      '<div class="row"><button class="btn" data-tcheck="1">Check</button><button class="btn ghost" data-treset="1">Clear</button><span class="fb'+(live.tfb&&live.tfb.ok?' yes':' no')+'" id="tfb">'+(live.tfb?live.tfb.t:'')+'</span></div>')+
+    '</div>'+
+    '<div class="story"><b class="who">Talk with a friend:</b>Which landscapes can you find in your country? <span class="hand">“In Argentina there are high mountains and huge waterfalls!”</span></div>';
+}
+
+/* ---------- Language detective: comparativos ---------- */
+var sortOrder = null;
+function renderDetective(){
+  pL.innerHTML =
+    '<span class="label">Warm-up 3</span><h2 class="stopname sticker">Language detective</h2>'+
+    '<div class="detective">'+
+    '<div class="dh">Language detective – Comparatives</div>'+
+    '<div class="db">'+
+      '<p>The Viking ship is <b>older than</b> Dan.</p>'+
+      '<p>The days in Iceland are <b>longer than</b> the days in Buenos Aires.</p>'+
+      '<p>Is Reynisfjara beach <b>more dangerous</b> than you think?</p>'+
+      '<ul>'+
+      '<li>Adjectives ending in –e add –r:<br><span>The iceberg is <b>large<u>r</u> than</b> a house.</span></li>'+
+      '<li>Adjectives ending in –y change to –ier:<br><span>The lava field is <b>dr<u>ier</u> than</b> the lagoon.</span></li>'+
+      '<li>Double letters:<br><span>The geyser is <b>ho<u>tt</u>er than</b> the river.</span></li>'+
+      '<li>Long adjectives use <b>more</b>:<br><span>The northern lights are <b>more beautiful than</b> fireworks.</span></li>'+
+      '</ul>'+
+    '</div></div>'+
+    '<svg class="lupa" viewBox="0 0 120 120" aria-hidden="true"><circle cx="48" cy="48" r="34" fill="#BFE8FF" fill-opacity=".7" stroke="#141414" stroke-width="8"/><path d="M74 74 L110 110" stroke="#141414" stroke-width="16" stroke-linecap="round"/><path d="M74 74 L110 110" stroke="#B3121B" stroke-width="8" stroke-linecap="round"/><path d="M30 36 Q38 24 52 22" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/></svg>';
+  if (!sortOrder) sortOrder = shuffle(SORT.slice());
+  var chips = '';
+  sortOrder.forEach(function(x){ if (!st.sort[x.w]) chips += '<button class="chip'+(live.sw===x.w?' pick':'')+'" data-sw="'+x.w+'">'+x.w+'</button>'; });
+  var bk = '';
+  BASKETS.forEach(function(b){
+    var inside = SORT.filter(function(x){ return st.sort[x.w] && x.r===b.r; }).map(function(x){ return '<span class="tword">'+x.w+'</span>'; }).join('');
+    bk += '<button class="basket'+(live.badB===b.r?' bad':'')+'" data-bk="'+b.r+'"><b>'+b.t+'</b><small>'+b.ex+'</small><div class="in">'+inside+'</div></button>';
+  });
+  var n = Object.keys(st.sort).length;
+  pR.innerHTML =
+    '<div class="task"><h3><span class="n">3</span>Be a language detective!'+(n===SORT.length?'<span class="ok">Done!</span>':'')+'</h3>'+
+    '<p style="margin-top:0">How do these adjectives make the comparative? <b>Put each word in the right basket.</b><br><span class="hand">Tap a word, then tap a basket.</span></p>'+
+    (chips ? '<div class="wordbox">'+chips+'</div>' : '')+
+    '<div class="baskets">'+bk+'</div>'+
+    '<div class="fb'+(n===SORT.length?' yes':(live.sfb?' no':''))+'" id="sfb">'+(n===SORT.length?'Case closed, detective! Now you are ready for the trip.':(live.sfb||n+' / '+SORT.length+' sorted'))+'</div>'+
+    '</div>'+(n?'<button class="btn ghost" data-reset="sort">Start again</button>':'');
 }
 
 /* ---------- parada ---------- */
@@ -650,7 +841,7 @@ function mediaHTML(m){
   return '<img src="'+M+m.img+'" alt="'+esc(m.cap)+'">';
 }
 function renderStop(s){
-  var x = S(s.id), idx = s.id;
+  var x = S(s.id);
   var m0 = s.media[0];
   var th = '';
   if (s.media.length>1) s.media.forEach(function(m,i){
@@ -670,7 +861,10 @@ function renderStop(s){
   live.fill = x.a ? answers.slice() : answers.map(function(){ return ''; });
   live.sel = 0;
   live.box = shuffle(answers.concat(s.extras));
-  /* tarea B: armar la oracion */
+  /* tarea B: comparativos, opciones barajadas una vez por render */
+  live.opts = s.cmp.map(function(q){ return shuffle([q.a].concat(q.bad)); });
+  live.cbad = {};
+  /* tarea C: armar la oracion */
   var target = s.build.split(' ');
   var tiles = target.map(function(t,i){ return {w:t, k:i}; });
   do { shuffle(tiles); } while (tiles.length>2 && tiles.map(function(t){return t.w;}).join(' ')===s.build);
@@ -679,8 +873,8 @@ function renderStop(s){
 
   pR.innerHTML =
     '<div class="story"><b class="who">Dan says:</b>'+esc(s.story)+'</div>'+
-    '<div class="task" id="tA"></div><div class="task" id="tB"></div><div class="task" id="tC"></div>';
-  drawA(); drawB(); drawC();
+    '<div class="task" id="tA"></div><div class="task" id="tB"></div><div class="task" id="tC"></div><div class="task" id="tD"></div>';
+  drawA(); drawB(); drawC(); drawD();
 }
 function okTag(b){ return b ? '<span class="ok">Done!</span>' : ''; }
 function drawA(){
@@ -705,41 +899,60 @@ function drawA(){
     sents += '<div class="sent">'+h+'</div>';
   });
   document.getElementById('tA').innerHTML =
-    '<h3><span class="n">A</span>Complete the sentences'+okTag(x.a)+'</h3>'+
+    '<h3><span class="n">A</span>Write the correct word in the spaces'+okTag(x.a)+'</h3>'+
     '<div class="wordbox">'+box+'</div>'+sents+
     (x.a ? '<div class="fb yes">Great job! Both sentences are correct.</div>' :
       '<div class="row"><button class="btn" data-check="A">Check</button><span class="fb" id="fbA">'+(live.fbA||'')+'</span></div>');
   live.marks = null;
 }
 function drawB(){
+  var s = live.stop, x = S(s.id), h = '';
+  s.cmp.forEach(function(q,i){
+    var done = x.c[i];
+    var parts = q.s.split('___');
+    var opts = '';
+    if (!done) live.opts[i].forEach(function(o){
+      opts += '<button class="opt'+(live.cbad[i]===o?' bad':'')+'" data-cmp="'+i+'" data-o="'+esc(o)+'">'+esc(o)+'</button>';
+    });
+    h += '<div class="cmp"><div class="sent"><span class="let">'+'ab'[i]+'</span>'+esc(parts[0])+
+      '<span class="gap'+(done?' good':'')+'">'+(done?esc(q.a):'&nbsp;')+'</span> <span class="adj">('+esc(q.adj)+')</span>'+esc(parts[1])+'</div>'+
+      (done ? '' : '<div class="opts">'+opts+'</div>')+
+      (live.cbad[i] && !done ? '<div class="hint">🔍 '+esc(RULES[q.rule])+'</div>' : '')+
+      '</div>';
+  });
+  document.getElementById('tB').innerHTML =
+    '<h3><span class="n">B</span>Language detective: comparatives'+okTag(cmpDone(s))+'</h3>'+
+    '<p style="margin:0 0 4px">Choose the correct comparative.</p>'+h;
+}
+function drawC(){
   var s = live.stop, x = S(s.id);
   var inAns = {}; live.built.forEach(function(t){ inAns[t.k] = 1; });
   var tray = '', ans = '';
   live.tiles.forEach(function(t){ if (!inAns[t.k]) tray += '<button class="tile" data-tile="'+t.k+'">'+esc(t.w)+'</button>'; });
   live.built.forEach(function(t,i){ ans += '<button class="tile" data-untile="'+i+'"'+(x.b?' disabled':'')+'>'+esc(t.w)+'</button>'; });
-  document.getElementById('tB').innerHTML =
-    '<h3><span class="n">B</span>Build the sentence'+okTag(x.b)+'</h3>'+
+  document.getElementById('tC').innerHTML =
+    '<h3><span class="n">C</span>Build the sentence'+okTag(x.b)+'</h3>'+
     (x.b ? '' : '<div class="tray">'+tray+'</div>')+
     '<div class="answer'+(x.b?' good':'')+(live.badB?' bad':'')+'">'+ans+'</div>'+
     (x.b ? '<div class="fb yes">Perfect sentence!</div>' :
-      '<div class="row"><button class="btn" data-check="B">Check</button><button class="btn ghost" data-clear="B">Clear</button><span class="fb" id="fbB">'+(live.fbB||'')+'</span></div>');
+      '<div class="row"><button class="btn" data-check="C">Check</button><button class="btn ghost" data-clear="C">Clear</button><span class="fb" id="fbC">'+(live.fbC||'')+'</span></div>');
   live.badB = false;
 }
-function drawC(){
+function drawD(){
   var s = live.stop, x = S(s.id);
   var st1 = '';
   s.starters.forEach(function(w){ st1 += '<button class="starter" data-ins="'+esc(w)+'">'+esc(w)+' ...</button>'; });
   var st2 = '';
   s.words.forEach(function(w){ st2 += '<button class="starter w" data-ins="'+esc(w)+'">'+esc(w)+'</button>'; });
-  document.getElementById('tC').innerHTML =
-    '<h3><span class="n">C</span>Your turn! Write a sentence'+okTag(!!x.w)+'</h3>'+
-    '<p style="margin:0 0 6px">Look at the photos and videos. What can you see? Write <b>your own</b> sentence.</p>'+
+  document.getElementById('tD').innerHTML =
+    '<h3><span class="n">D</span>Your turn! Compare two things'+okTag(!!x.w)+'</h3>'+
+    '<p style="margin:0 0 6px">Look at the photos and videos. Write <b>your own</b> sentence with a comparative. <span class="hand">The ... is ...er than ...</span></p>'+
     '<div class="starters">'+st1+'</div><div class="starters">'+st2+'</div>'+
-    '<textarea id="wr" placeholder="I can see ..." maxlength="240">'+esc(live.draft!=null?live.draft:x.w)+'</textarea>'+
-    '<div class="row"><button class="btn" data-stick="1">&#9986; Stick it in my journal</button><span class="fb" id="fbC"></span></div>';
+    '<textarea id="wr" placeholder="The waterfall is higher than ..." maxlength="240">'+esc(live.draft!=null?live.draft:x.w)+'</textarea>'+
+    '<div class="row"><button class="btn" data-stick="1">&#9986; Stick it in my journal</button><span class="fb" id="fbD"></span></div>';
 }
 
-/* ---------- adivinanzas ---------- */
+/* ---------- 2.3 Activity 3: adivinanzas ---------- */
 var riddleOpts = null;
 function renderRiddles(){
   if (!riddleOpts) riddleOpts = RIDDLES.map(function(r,i){
@@ -766,6 +979,31 @@ function renderRiddles(){
   pR.innerHTML = block(half,RIDDLES.length)+'<div class="fb'+(n===RIDDLES.length?' yes':'')+'">'+(n===RIDDLES.length?'Wow! You guessed them all. You are a real Viking explorer!':n+' / '+RIDDLES.length+' guessed')+'</div>';
 }
 
+/* ---------- 2.1 Activity 6: true / false ---------- */
+function renderTF(){
+  function block(from,to){
+    var h = '';
+    for (var i=from;i<to;i++){
+      var q = TF[i], ans = st.tf[i];
+      h += '<div class="tf'+(ans?' done':'')+'"><p><b>'+(i+1)+'.</b> '+esc(q.s)+'</p>'+
+        (ans ? '<div class="tfa"><span class="tag '+(q.a?'t':'f')+'">'+(q.a?'TRUE':'FALSE')+'</span> '+esc(q.why)+'</div>' :
+          '<div class="row" style="margin-top:4px"><button class="tbtn t'+(live.tfbad===i+'t'?' bad':'')+'" data-tf="'+i+'" data-v="1">True</button><button class="tbtn f'+(live.tfbad===i+'f'?' bad':'')+'" data-tf="'+i+'" data-v="0">False</button></div>')+
+        '</div>';
+    }
+    return h;
+  }
+  var n = Object.keys(st.tf).length;
+  pL.innerHTML = '<span class="label">Iceland quiz</span><h2 class="stopname sticker">True or false?</h2>'+
+    '<p style="margin-top:0;color:#fff;font-weight:bold;text-shadow:2px 2px 0 #141414">Read Dan’s quiz. Is it true or false?</p>'+block(0,4);
+  pR.innerHTML = block(4,TF.length)+
+    '<div class="fb'+(n===TF.length?' yes':'')+'">'+(n===TF.length?'Quiz complete! You know Iceland very well.':n+' / '+TF.length+' answered')+'</div>'+
+    '<div class="task" style="margin-top:14px"><h3><span class="n">★</span>Write a true / false sentence'+okTag(!!st.tfw)+'</h3>'+
+    '<p style="margin:0 0 6px">Write a sentence about Iceland or Argentina with a comparative. Ask a friend: true or false?</p>'+
+    '<div class="starters"><button class="starter" data-ins="Argentina is">Argentina is ...</button><button class="starter" data-ins="Iceland is">Iceland is ...</button><button class="starter w" data-ins="hotter than">hotter than</button><button class="starter w" data-ins="bigger than">bigger than</button><button class="starter w" data-ins="more beautiful than">more beautiful than</button></div>'+
+    '<textarea id="wr" placeholder="Argentina is hotter than Iceland." maxlength="240">'+esc(live.draft!=null?live.draft:st.tfw)+'</textarea>'+
+    '<div class="row"><button class="btn" data-sticktf="1">&#9986; Stick it in my journal</button><span class="fb" id="fbD"></span></div></div>';
+}
+
 /* ---------- diario ---------- */
 function renderJournal(){
   var shields = STOPS.filter(stopDone).length;
@@ -776,6 +1014,7 @@ function renderJournal(){
     var m = s.media[0];
     ent += '<div class="jentry"><img src="'+M+(m.img||m.poster)+'" alt=""><div><div class="k">Stop '+(i+1)+' · '+esc(s.name)+'</div><div class="s">'+esc(w)+'</div></div></div>';
   });
+  if (st.tfw){ any = true; ent += '<div class="jentry"><img src="'+M+'p7466.jpg" alt=""><div><div class="k">My true / false sentence</div><div class="s">'+esc(st.tfw)+'</div></div></div>'; }
   pL.innerHTML =
     '<span class="label">The end... or is it?</span>'+
     '<h2 class="stopname sticker">My Iceland journal</h2>'+
@@ -783,9 +1022,9 @@ function renderJournal(){
     '<div class="media"><img src="'+M+'p1721.jpg" alt="The northern lights"></div>'+
     '<div class="cap">We did it! We found the northern lights!</div></div>';
   pR.innerHTML =
-    '<div class="score"><div>Shields: '+shields+'/'+STOPS.length+'</div><div>Warm-up: '+Object.keys(st.match).length+'/'+MATCH.length+'</div><div>Quiz: '+Object.keys(st.riddles).length+'/'+RIDDLES.length+'</div></div>'+
+    '<div class="score"><div>Shields: '+shields+'/'+STOPS.length+'</div><div>Detective: '+Object.keys(st.sort).length+'/'+SORT.length+'</div><div>Photos: '+Object.keys(st.riddles).length+'/'+RIDDLES.length+'</div><div>True/false: '+Object.keys(st.tf).length+'/'+TF.length+'</div></div>'+
     '<h3 style="text-transform:uppercase;margin-bottom:10px">My sentences about Iceland</h3>'+
-    (any ? ent : '<p class="hand">Your journal is empty. Go to a stop and write your own sentence in task C!</p>')+
+    (any ? ent : '<p class="hand">Your journal is empty. Go to a stop and write your own sentence in task D!</p>')+
     '<div class="row no-print"><button class="btn" data-print="1">Print my journal</button><button class="btn ghost" data-reset="all">Start the trip again</button></div>';
 }
 
@@ -810,11 +1049,18 @@ function go(n){
 }
 function toBook(){ var r = book.getBoundingClientRect(); if (r.top < 0) window.scrollTo({top: window.scrollY + r.top - 10, behavior:'smooth'}); }
 function stopVideos(){ document.querySelectorAll('video').forEach(function(v){ try{ v.pause(); }catch(e){} }); }
+function setFb(id, kind){ var f = document.getElementById(id); if (f) f.className = 'fb ' + kind; }
+function cleanSentence(txt){
+  txt = txt.replace(/\s+/g,' ').trim();
+  if (!/[.!?]$/.test(txt)) txt += '.';
+  return txt.charAt(0).toUpperCase() + txt.slice(1);
+}
+function wordCount(txt){ txt = txt.trim(); return txt ? txt.split(/\s+/).length : 0; }
 
 /* ---------- clicks ---------- */
 var pickedWord = null;
 document.addEventListener('click', function(e){
-  var b = e.target.closest('button, .pin'); if (!b) return;
+  var b = e.target.closest('button, .pin, .tcell'); if (!b) return;
   var d = b.dataset || {}, gattr = b.getAttribute('data-go');
   if (gattr!=null){ go(+gattr); return; }
   if (b.id==='prev'){ go(cur-1); return; }
@@ -822,7 +1068,7 @@ document.addEventListener('click', function(e){
 
   /* fotos de la parada */
   if (d.media!=null){
-    var s = live.stop, m = s.media[+d.media];
+    var m = live.stop.media[+d.media];
     stopVideos();
     document.getElementById('media').innerHTML = mediaHTML(m);
     document.getElementById('cap').innerHTML = '<span class="place">'+esc(m.place)+'</span>'+esc(m.cap);
@@ -832,7 +1078,7 @@ document.addEventListener('click', function(e){
   /* tarea A */
   if (d.gap!=null){
     var i = +d.gap;
-    if (live.fill[i]){ live.fill[i] = ''; }
+    if (live.fill[i]) live.fill[i] = '';
     live.sel = i; live.fbA = ''; drawA(); return;
   }
   if (d.chip!=null){
@@ -843,48 +1089,51 @@ document.addEventListener('click', function(e){
     live.fbA = ''; drawA(); return;
   }
   if (d.check==='A'){
-    if (live.fill.indexOf('')>=0){ live.fbA = 'Fill all the gaps first!'; drawA(); setFb('fbA','no'); return; }
+    if (live.fill.indexOf('')>=0){ live.fbA = 'Fill all the spaces first!'; drawA(); setFb('fbA','no'); return; }
     var marks = live.fill.map(function(w,i){ return w===live.answers[i]; });
     if (marks.every(Boolean)){ S(live.stop.id).a = true; save(); drawA(); renderShields(); return; }
-    live.marks = marks; live.fbA = 'Not yet! Look at the red gap and try again.';
+    live.marks = marks; live.fbA = 'Not yet! Look at the red space and try again.';
     drawA(); setFb('fbA','no');
     live.fill = live.fill.map(function(w,i){ return marks[i] ? w : ''; });
     live.sel = live.fill.indexOf('');
-    setTimeout(function(){ if (document.getElementById('tA')) drawA(); setFb('fbA','no'); }, 900);
+    setTimeout(function(){ if (document.getElementById('tA')) { drawA(); setFb('fbA','no'); } }, 900);
     return;
   }
-  /* tarea B */
-  if (d.tile!=null){
-    var t = live.tiles.filter(function(q){ return q.k===+d.tile; })[0];
-    live.built.push(t); live.fbB=''; drawB(); return;
-  }
-  if (d.untile!=null){ live.built.splice(+d.untile,1); live.fbB=''; drawB(); return; }
-  if (d.clear==='B'){ live.built = []; live.fbB=''; drawB(); return; }
-  if (d.check==='B'){
-    var s2 = live.stop;
-    if (live.built.length < live.tiles.length){ live.fbB = 'Use all the words!'; drawB(); setFb('fbB','no'); return; }
-    if (live.built.map(function(q){return q.w;}).join(' ')===s2.build){ S(s2.id).b = true; save(); drawB(); renderShields(); return; }
-    live.fbB = 'Almost! Check the order of the words.'; live.badB = true; drawB(); setFb('fbB','no'); return;
+  /* tarea B: comparativos */
+  if (d.cmp!=null){
+    var ci = +d.cmp, q = live.stop.cmp[ci];
+    if (d.o===q.a){ S(live.stop.id).c[ci] = true; save(); delete live.cbad[ci]; drawB(); renderShields(); return; }
+    live.cbad[ci] = d.o; drawB(); return;
   }
   /* tarea C */
+  if (d.tile!=null){
+    var t = live.tiles.filter(function(q){ return q.k===+d.tile; })[0];
+    live.built.push(t); live.fbC=''; drawC(); return;
+  }
+  if (d.untile!=null){ live.built.splice(+d.untile,1); live.fbC=''; drawC(); return; }
+  if (d.clear==='C'){ live.built = []; live.fbC=''; drawC(); return; }
+  if (d.check==='C'){
+    var s2 = live.stop;
+    if (live.built.length < live.tiles.length){ live.fbC = 'Use all the words!'; drawC(); setFb('fbC','no'); return; }
+    if (live.built.map(function(q){return q.w;}).join(' ')===s2.build){ S(s2.id).b = true; save(); drawC(); renderShields(); return; }
+    live.fbC = 'Almost! Check the order of the words.'; live.badB = true; drawC(); setFb('fbC','no'); return;
+  }
+  /* tarea D y oracion true/false */
   if (d.ins!=null){
     var ta = document.getElementById('wr'), v = ta.value, add = d.ins;
     if (v && !/\s$/.test(v)) add = ' '+add;
     ta.value = (v + add + ' ').slice(0,240); ta.focus(); live.draft = ta.value; return;
   }
-  if (d.stick){
-    var ta2 = document.getElementById('wr'), txt = ta2.value.replace(/\s+/g,' ').trim();
-    var words = txt ? txt.split(' ').length : 0;
-    var fb = document.getElementById('fbC');
-    if (words < 3){ fb.textContent = 'Write a longer sentence: at least 3 words!'; fb.className='fb no'; return; }
-    if (!/[.!?]$/.test(txt)) txt += '.';
-    txt = txt.charAt(0).toUpperCase() + txt.slice(1);
-    S(live.stop.id).w = txt; live.draft = null; save();
-    drawC(); renderShields();
-    var f2 = document.getElementById('fbC'); f2.textContent = 'Stuck in your journal! ✔'; f2.className='fb yes';
+  if (d.stick || d.sticktf){
+    var txt = document.getElementById('wr').value, fb = document.getElementById('fbD');
+    if (wordCount(txt) < 4){ fb.textContent = 'Write a longer sentence: at least 4 words!'; fb.className='fb no'; return; }
+    if (!/\bthan\b/i.test(txt)){ fb.textContent = 'Use a comparative with than! Try: ...er than / more ... than.'; fb.className='fb no'; return; }
+    if (d.stick){ S(live.stop.id).w = cleanSentence(txt); live.draft = null; save(); drawD(); renderShields(); }
+    else { st.tfw = cleanSentence(txt); live.draft = null; save(); renderTF(); }
+    var f2 = document.getElementById('fbD'); f2.textContent = 'Stuck in your journal! ✔'; f2.className='fb yes';
     return;
   }
-  /* calentamiento */
+  /* 2.3 Activity 1 */
   if (d.mword!=null){
     if (st.match[d.mword]) return;
     pickedWord = d.mword;
@@ -901,22 +1150,65 @@ document.addEventListener('click', function(e){
     fbm.textContent = 'Oops! That photo is not "'+pickedWord+'". Try another one.'; fbm.className='fb no';
     return;
   }
-  /* adivinanzas */
+  /* 2.1 Activity 2: tabla */
+  if (d.adj!=null){ live.adj = d.adj; live.tfb = null; renderTable(); return; }
+  if (d.tdel!=null){
+    e.stopPropagation();
+    var pr = d.tdel.split('|'), col = tableState()[pr[0]];
+    col.splice(col.indexOf(pr[1]),1); live.tbad = null; live.tfb = null; save(); renderTable(); return;
+  }
+  if (d.tcol!=null){
+    if (st.tableOk) return;
+    if (!live.adj){ live.tfb = {t:'First tap an adjective in the box!', ok:false}; renderTable(); return; }
+    var c2 = tableState()[d.tcol];
+    if (c2.indexOf(live.adj)<0) c2.push(live.adj);
+    live.tbad = null; live.tfb = null; save(); renderTable(); return;
+  }
+  if (d.tcheck){
+    var tb = tableState(), bad = {}, nbad = 0, few = 0;
+    TABLE.forEach(function(c){
+      if (tb[c.k].length < 3) few++;
+      tb[c.k].forEach(function(a){ if (c.ok.indexOf(a)<0){ bad[c.k+'|'+a] = 1; nbad++; } });
+    });
+    if (nbad){ live.tbad = bad; live.tfb = {t:'Hmm! Look at the red words. Do they describe that landscape?', ok:false}; }
+    else if (few){ live.tfb = {t:'Good! Now put at least three adjectives in every column.', ok:false}; }
+    else { st.tableOk = true; save(); }
+    renderTable(); return;
+  }
+  if (d.treset){ st.table = null; live.tbad = null; live.tfb = null; save(); renderTable(); return; }
+  /* language detective */
+  if (d.sw!=null){ live.sw = d.sw; live.sfb = ''; live.badB = null; renderDetective(); return; }
+  if (d.bk!=null){
+    if (!live.sw){ live.sfb = 'First tap a word!'; renderDetective(); return; }
+    var item = SORT.filter(function(x){ return x.w===live.sw; })[0];
+    if (item.r===d.bk){ st.sort[item.w] = true; save(); live.sw = null; live.sfb = ''; live.badB = null; }
+    else { live.badB = d.bk; live.sfb = 'Not that basket! Look at the end of "'+item.w+'".'; }
+    renderDetective(); return;
+  }
+  /* 2.3 Activity 3 */
   if (d.riddle!=null){
     var ri = +d.riddle;
     if (st.riddles[ri]) return;
     if (d.img===RIDDLES[ri].img){ st.riddles[ri] = true; save(); renderRiddles(); return; }
     b.classList.remove('bad'); void b.offsetWidth; b.classList.add('bad'); return;
   }
+  /* true / false */
+  if (d.tf!=null){
+    var ti = +d.tf, val = d.v==='1';
+    if (val===TF[ti].a){ st.tf[ti] = true; save(); live.tfbad = null; }
+    else live.tfbad = ti+(val?'t':'f');
+    renderTF(); return;
+  }
   if (d.print){ window.print(); return; }
   if (d.reset==='match'){ st.match = {}; save(); matchOrder = null; pickedWord = null; renderMatch(); return; }
+  if (d.reset==='sort'){ st.sort = {}; save(); sortOrder = null; live.sw = null; renderDetective(); return; }
   if (d.reset==='all'){
     if (!confirm('Start the trip again? Your shields and sentences will be deleted.')) return;
-    st = {stops:{}, match:{}, riddles:{}, page:0}; save(); matchOrder = null; riddleOpts = null; go(0); render(); return;
+    st = {stops:{}, match:{}, riddles:{}, table:null, tableOk:false, sort:{}, tf:{}, tfw:'', page:0};
+    save(); matchOrder = null; riddleOpts = null; sortOrder = null; go(0); return;
   }
 });
 document.addEventListener('input', function(e){ if (e.target.id==='wr') live.draft = e.target.value; });
-function setFb(id, kind){ var f = document.getElementById(id); if (f) f.className = 'fb ' + kind; }
 document.addEventListener('keydown', function(e){
   if (/TEXTAREA|INPUT/.test(e.target.tagName)) return;
   if (e.key==='ArrowRight') go(cur+1);
