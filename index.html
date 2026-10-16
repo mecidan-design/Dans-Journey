@@ -335,6 +335,33 @@ body.journal-open .rpcard{display:block}
 .tword.okw{background:var(--lima)}
 .tword[data-sback]{cursor:pointer}
 .tf.wrongtf{border-color:var(--rojo)}
+/* ---------- visor de fotos ---------- */
+.polaroid .media img{cursor:zoom-in}
+.polaroid .zoomtag{position:absolute; right:8px; bottom:8px; z-index:2; background:rgba(20,20,20,.75); color:#fff; border:2px solid #fff;
+  border-radius:8px; font-family:var(--titulo); font-size:.7rem; letter-spacing:1px; padding:2px 8px; pointer-events:none}
+.zbtn{position:absolute; right:6px; top:6px; z-index:3; width:30px; height:30px; border-radius:50%; background:#fff; border:3px solid var(--negro);
+  display:flex; align-items:center; justify-content:center; font-size:.85rem; box-shadow:2px 2px 0 var(--negro); cursor:zoom-in}
+.zbtn:hover{background:var(--amarillo)}
+.lb{position:fixed; inset:0; z-index:70; background:rgba(10,12,20,.94); user-select:none}
+.lb[hidden]{display:none}
+.lbstage{position:absolute; inset:0 0 58px 0; overflow:hidden; touch-action:none; cursor:grab}
+.lbstage.drag{cursor:grabbing}
+.lbstage img{position:absolute; left:0; top:0; transform-origin:0 0; max-width:none; image-rendering:auto; will-change:transform;
+  border:4px solid #fff; box-shadow:0 0 0 4px var(--negro)}
+.lbbar{position:absolute; left:0; right:0; bottom:0; height:58px; display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:0 14px; background:var(--negro); color:var(--crema)}
+.lbcap{font-family:var(--mano); font-size:1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.lbtools{display:flex; gap:8px; flex:none}
+.lbb{width:42px; height:42px; border-radius:10px; border:3px solid var(--crema); background:transparent; color:var(--crema); font-family:var(--titulo); font-size:1.2rem}
+.lbb:hover{background:var(--amarillo); color:var(--negro)}
+.lbb.close{background:var(--rojo)}
+.lbnav{position:absolute; top:calc(50% - 29px); transform:translateY(-50%); z-index:2; width:52px; height:52px; border-radius:50%;
+  border:4px solid var(--negro); background:var(--amarillo); font-size:1.2rem; box-shadow:4px 4px 0 var(--negro)}
+.lbnav.prev{left:14px} .lbnav.next{right:14px}
+.lbnav[hidden]{display:none}
+.lbhint{position:absolute; top:14px; left:50%; transform:translateX(-50%); background:var(--amarillo); color:var(--negro); border:3px solid var(--negro);
+  border-radius:10px; padding:4px 12px; font-family:var(--titulo); font-size:.78rem; transition:opacity .6s; pointer-events:none; white-space:nowrap}
+.lbhint.off{opacity:0}
 footer{text-align:center; padding:18px 16px 26px; font-family:var(--cuerpo); font-size:.72rem; font-weight:normal;
   letter-spacing:3px; text-transform:uppercase; color:rgba(20,20,20,.62)}
 footer span{display:inline-block}
@@ -412,6 +439,23 @@ footer span{display:inline-block}
 </div>
 
 <canvas id="confetti" aria-hidden="true"></canvas>
+
+<!-- visor de fotos con zoom -->
+<div class="lb" id="lb" hidden>
+  <div class="lbstage" id="lbStage"><img id="lbImg" alt=""></div>
+  <button class="lbnav prev" id="lbPrev" aria-label="Previous photo">&#9664;</button>
+  <button class="lbnav next" id="lbNext" aria-label="Next photo">&#9654;</button>
+  <div class="lbbar">
+    <span class="lbcap" id="lbCap"></span>
+    <span class="lbtools">
+      <button class="lbb" id="lbOut" aria-label="Zoom out">&minus;</button>
+      <button class="lbb" id="lbIn" aria-label="Zoom in">+</button>
+      <button class="lbb" id="lbFit" aria-label="Fit the photo">&#8634;</button>
+      <button class="lbb close" id="lbClose" aria-label="Close">&#10005;</button>
+    </span>
+  </div>
+  <div class="lbhint" id="lbHint">Use the mouse wheel to zoom &middot; drag to move</div>
+</div>
 
 <!-- el juego -->
 <div class="ov" id="gameOv" hidden>
@@ -869,7 +913,7 @@ function renderMatch(){
     var done = st.match[m.w], put = live.mpair[m.w];
     var bad = live.mbad && live.mbad[m.w];
     g += '<button class="ph'+(done?' good':'')+(bad?' bad':'')+(live.pick&&!done?' target':'')+'" data-mimg="'+esc(m.w)+'" style="--r:'+rot(i)+'"><span class="let">'+'abcdefgh'[i]+'</span>'+
-      '<img src="'+M+m.img+'" alt="Photo '+'abcdefgh'[i]+'" loading="lazy">'+
+      '<img src="'+M+m.img+'" alt="Photo '+'abcdefgh'[i]+'" loading="lazy">'+zbtn(m.img)+
       (done ? '<span class="stick">'+esc(m.w)+'</span>' : put ? '<span class="stick try">'+esc(put)+'</span>' : '')+'</button>';
   });
   pL.innerHTML = '<span class="label">Warm-up 1</span><h2 class="stopname sticker">Natural events</h2><div class="grid">'+g+'</div>';
@@ -897,7 +941,7 @@ function renderTable(){
   var t = tableState();
   var g = '';
   TABLE.forEach(function(c,i){
-    g += '<div class="ph" style="--r:'+rot(i)+'"><span class="let">'+'abcd'[i]+'</span><img src="'+M+c.img+'" alt="'+esc(c.h)+'"><span class="stick">'+esc(c.h)+'</span></div>';
+    g += '<div class="ph" style="--r:'+rot(i)+'"><span class="let">'+'abcd'[i]+'</span><img src="'+M+c.img+'" alt="'+esc(c.h)+'">'+zbtn(c.img, c.h)+'<span class="stick">'+esc(c.h)+'</span></div>';
   });
   pL.innerHTML = '<span class="label">Warm-up 2</span><h2 class="stopname sticker">Iceland’s landscapes</h2><div class="grid">'+g+'</div>';
   var box = '';
@@ -965,7 +1009,7 @@ function renderDetective(){
 /* ---------- parada ---------- */
 function mediaHTML(m){
   if (m.vid) return '<span class="vidtag">VIDEO</span><video src="'+M+m.vid+'" poster="'+M+m.poster+'" controls muted loop playsinline preload="metadata"></video>';
-  return '<img src="'+M+m.img+'" alt="'+esc(m.cap)+'">';
+  return '<img src="'+M+m.img+'" alt="'+esc(m.cap)+'"><span class="zoomtag">&#128269; Click to zoom</span>';
 }
 function renderStop(s){
   var x = S(s.id);
@@ -1145,7 +1189,7 @@ function renderRiddles(){
       var o = '';
       riddleOpts[i].forEach(function(img,j){
         var cls = 'ph' + (ans && img===r.img ? ' good' : '') + (!ans && live.rsel[i]===img ? ' chosen' : '') + (live.rbad && live.rbad[i]===img ? ' bad' : '');
-        o += '<button class="'+cls+'" data-riddle="'+i+'" data-img="'+img+'" style="--r:'+rot(i+j)+'"'+(ans?' disabled':'')+'><span class="let">'+'abc'[j]+'</span><img src="'+M+img+'" alt="Photo '+'abc'[j]+'" loading="lazy"></button>';
+        o += '<button class="'+cls+'" data-riddle="'+i+'" data-img="'+img+'" style="--r:'+rot(i+j)+'"'+(ans?' disabled':'')+'><span class="let">'+'abc'[j]+'</span><img src="'+M+img+'" alt="Photo '+'abc'[j]+'" loading="lazy">'+zbtn(img)+'</button>';
       });
       h += '<div class="riddle"><p><b>'+(i+1)+'.</b> '+esc(r.q)+(ans?' <b style="color:#0B7A2E">✔</b>':'')+'</p><div class="ropts">'+o+'</div></div>';
     }
@@ -1443,7 +1487,7 @@ document.addEventListener('click', function(e){
 document.addEventListener('input', function(e){ if (e.target.id==='wr') live.draft = e.target.value; });
 document.addEventListener('keydown', function(e){
   if (/TEXTAREA|INPUT|SELECT/.test(e.target.tagName)) return;
-  if (gameOpen) return;
+  if (gameOpen || LB.open) return;
   if (e.key==='ArrowRight') go(cur+1);
   if (e.key==='ArrowLeft') go(cur-1);
 });
@@ -1820,6 +1864,132 @@ document.addEventListener('keydown', function(e){
   if (e.key==='Escape') closeGame();
 });
 document.getElementById('game').addEventListener('pointerdown', function(e){ e.preventDefault(); jump(); });
+
+/* =========================================================
+   VISOR DE FOTOS: click para agrandar, ruedita para zoom
+   (hacia donde apunta el mouse), arrastrar para mover,
+   doble click para acercar/alejar y dos dedos en el celular.
+   ========================================================= */
+function zbtn(src, cap){ return '<span class="zbtn" data-zoom="'+esc(src)+'" data-zcap="'+esc(cap||'')+'" title="Make it bigger">&#128269;</span>'; }
+var LB = {open:false, list:[], i:0, s:1, fit:1, x:0, y:0, ptr:{}, pinch:null, base:null};
+var lb = document.getElementById('lb'), lbStage = document.getElementById('lbStage'), lbImg = document.getElementById('lbImg');
+function lbOpen(list, i){
+  LB.list = list; LB.i = i; LB.open = true; lb.hidden = false;
+  stopVideos();
+  document.getElementById('lbHint').classList.remove('off');
+  clearTimeout(LB.ht); LB.ht = setTimeout(function(){ document.getElementById('lbHint').classList.add('off'); }, 2600);
+  lbShow();
+}
+function lbShow(){
+  var it = LB.list[LB.i];
+  document.getElementById('lbCap').textContent = it.cap || '';
+  document.getElementById('lbPrev').hidden = LB.list.length < 2;
+  document.getElementById('lbNext').hidden = LB.list.length < 2;
+  /* primero la foto liviana (aparece enseguida) y despues se cambia por la
+     de alta resolucion de media/hd/, sin mover el zoom: el ancho en pantalla
+     queda fijado al de la liviana */
+  LB.base = null;
+  lbImg.style.width = '';
+  lbImg.onload = function(){
+    if (LB.base) return;
+    LB.base = {w: lbImg.naturalWidth, h: lbImg.naturalHeight};
+    lbImg.style.width = LB.base.w + 'px';
+    lbFit();
+    var hd = new Image(), want = it.src;
+    hd.onload = function(){ if (LB.open && LB.list[LB.i].src===want) lbImg.src = hd.src; };
+    hd.src = M + 'hd/' + it.src;
+  };
+  lbImg.src = M + it.src;
+}
+function lbFit(){
+  if (!LB.base) return;
+  var W = lbStage.clientWidth, H = lbStage.clientHeight, w = LB.base.w, h = LB.base.h;
+  LB.fit = Math.min((W-40)/w, (H-40)/h);
+  LB.s = LB.fit; LB.x = (W - w*LB.s)/2; LB.y = (H - h*LB.s)/2;
+  lbApply();
+}
+function lbApply(){ lbImg.style.transform = 'translate('+LB.x+'px,'+LB.y+'px) scale('+LB.s+')'; }
+/* zoom manteniendo fijo el punto (cx, cy) de la pantalla */
+function lbZoom(f, cx, cy){
+  var ns = Math.max(LB.fit, Math.min(LB.fit*10, LB.s*f));
+  if (cx == null){ cx = lbStage.clientWidth/2; cy = lbStage.clientHeight/2; }
+  LB.x = cx - (cx - LB.x) * (ns/LB.s);
+  LB.y = cy - (cy - LB.y) * (ns/LB.s);
+  LB.s = ns;
+  if (ns === LB.fit) return lbFit();
+  lbApply();
+}
+function lbClose(){ LB.open = false; lb.hidden = true; LB.base = {w:1,h:1}; lbImg.removeAttribute('src'); }
+function lbStep(d){ LB.i = (LB.i + d + LB.list.length) % LB.list.length; lbShow(); }
+
+lbStage.addEventListener('wheel', function(e){
+  e.preventDefault();
+  var r = lbStage.getBoundingClientRect();
+  lbZoom(Math.exp(-e.deltaY * 0.0018), e.clientX - r.left, e.clientY - r.top);
+}, {passive:false});
+lbStage.addEventListener('dblclick', function(e){
+  var r = lbStage.getBoundingClientRect();
+  if (LB.s > LB.fit*1.05) lbFit(); else lbZoom(2.5, e.clientX - r.left, e.clientY - r.top);
+});
+lbStage.addEventListener('pointerdown', function(e){
+  lbStage.setPointerCapture(e.pointerId);
+  LB.ptr[e.pointerId] = {x:e.clientX, y:e.clientY};
+  var ids = Object.keys(LB.ptr);
+  if (ids.length === 2){
+    var a = LB.ptr[ids[0]], b = LB.ptr[ids[1]];
+    LB.pinch = {d: Math.hypot(a.x-b.x, a.y-b.y)};
+  }
+  lbStage.classList.add('drag');
+});
+lbStage.addEventListener('pointermove', function(e){
+  var p = LB.ptr[e.pointerId]; if (!p) return;
+  var ids = Object.keys(LB.ptr), r = lbStage.getBoundingClientRect();
+  if (ids.length === 2 && LB.pinch){
+    p.x = e.clientX; p.y = e.clientY;
+    var a = LB.ptr[ids[0]], b = LB.ptr[ids[1]], d = Math.hypot(a.x-b.x, a.y-b.y);
+    lbZoom(d / LB.pinch.d, (a.x+b.x)/2 - r.left, (a.y+b.y)/2 - r.top);
+    LB.pinch.d = d; return;
+  }
+  if (LB.s > LB.fit){ LB.x += e.clientX - p.x; LB.y += e.clientY - p.y; lbApply(); }
+  p.x = e.clientX; p.y = e.clientY;
+});
+function lbUp(e){ delete LB.ptr[e.pointerId]; if (Object.keys(LB.ptr).length < 2) LB.pinch = null; if (!Object.keys(LB.ptr).length) lbStage.classList.remove('drag'); }
+lbStage.addEventListener('pointerup', lbUp);
+lbStage.addEventListener('pointercancel', lbUp);
+document.getElementById('lbIn').onclick = function(){ lbZoom(1.4); };
+document.getElementById('lbOut').onclick = function(){ lbZoom(1/1.4); };
+document.getElementById('lbFit').onclick = lbFit;
+document.getElementById('lbClose').onclick = lbClose;
+document.getElementById('lbPrev').onclick = function(){ lbStep(-1); };
+document.getElementById('lbNext').onclick = function(){ lbStep(1); };
+window.addEventListener('resize', function(){ if (LB.open) lbFit(); });
+document.addEventListener('keydown', function(e){
+  if (!LB.open) return;
+  if (e.key==='Escape') lbClose();
+  else if (e.key==='+' || e.key==='=') lbZoom(1.4);
+  else if (e.key==='-') lbZoom(1/1.4);
+  else if (e.key==='ArrowRight') lbStep(1);
+  else if (e.key==='ArrowLeft') lbStep(-1);
+  else return;
+  e.preventDefault(); e.stopImmediatePropagation();
+}, true);
+/* que abre el visor: la foto grande de la parada (con todas las fotos de
+   esa parada para pasar con las flechas), la del diario y las lupitas */
+document.addEventListener('click', function(e){
+  var z = e.target.closest('[data-zoom]');
+  if (z){ e.preventDefault(); e.stopImmediatePropagation(); lbOpen([{src:z.dataset.zoom, cap:z.dataset.zcap}], 0); return; }
+  var img = e.target.closest('.polaroid .media img');
+  if (!img) return;
+  e.stopImmediatePropagation();
+  var p = PAGES[cur];
+  if (p.t==='stop'){
+    var s = STOPS[p.i], photos = s.media.filter(function(m){ return m.img; });
+    var list = photos.map(function(m){ return {src:m.img, cap:m.place+' · '+m.cap}; });
+    var src = img.getAttribute('src').replace(M,'');
+    var k = 0; list.forEach(function(it,j){ if (it.src===src) k = j; });
+    lbOpen(list, k);
+  } else lbOpen([{src:img.getAttribute('src').replace(M,''), cap:''}], 0);
+}, true);
 
 render();
 </script>
